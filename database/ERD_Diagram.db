@@ -1,0 +1,259 @@
+Table users {
+  id integer [primary key]
+  username varchar [not null, unique]
+  email varchar [not null, unique]
+  password varchar [not null]
+  full_name varchar
+  phone varchar
+  role enum('tenant', 'owner', 'admin') [not null]
+  profile_photo varchar
+  id_card_number varchar
+  id_card_photo varchar // NEW - untuk verification
+  address text
+  birth_date date // NEW
+  status enum('active', 'inactive', 'suspended') [default: 'active']
+  email_verified_at timestamp
+  document_verified_at timestamp // NEW
+  last_login timestamp // NEW
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table apartments {
+  id integer [primary key]
+  unit_number varchar [not null]
+  unit_type varchar [not null]
+  floor integer
+  size_sqm decimal(8,2)
+  bedrooms integer
+  bathrooms integer
+  price_per_month decimal(12,2) [not null]
+  deposit_amount decimal(12,2)
+  seasonal_pricing json // NEW - untuk high/low season
+  minimum_stay_months integer [default: 1] // NEW
+  description text
+  furnished boolean [default: false]
+  view_direction varchar // NEW
+  electricity_watt integer // NEW
+  water_source varchar // NEW
+  parking_slots integer // NEW
+  pet_friendly boolean [default: false] // NEW
+  smoking_allowed boolean [default: false] // NEW
+  availability_status enum('available', 'occupied') [default: 'available']
+  owner_id integer [not null]
+  total_views integer [default: 0] // NEW - untuk analytics
+  total_inquiries integer [default: 0] // NEW
+  avg_rating decimal(3,2) [default: 0] // NEW
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table bookings {
+  id integer [primary key]
+  apartment_id integer [not null]
+  tenant_id integer [not null]
+  booking_code varchar [unique, not null]
+  start_date date [not null]
+  end_date date [not null]
+  total_months integer
+  monthly_rent decimal(12,2)
+  deposit_paid decimal(12,2)
+  utility_deposit decimal(12,2) // NEW
+  admin_fee decimal(12,2) // NEW
+  total_amount decimal(12,2)
+  status enum('pending', 'confirmed', 'active', 'completed', 'cancelled', 'rejected') [default: 'pending']
+  rejection_reason text // NEW
+  contract_file varchar
+  contract_start_date date // NEW
+  contract_end_date date // NEW
+  auto_renewal boolean [default: false] // NEW
+  notes text
+  approved_by integer // NEW - admin/owner yang approve
+  approved_at timestamp // NEW
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table payments {
+  id integer [primary key]
+  booking_id integer [not null]
+  payment_code varchar [unique, not null]
+  payment_type enum('deposit', 'monthly_rent', 'penalty', 'refund', 'utility')
+  amount decimal(12,2) [not null]
+  payment_method enum('bank_transfer', 'credit_card', 'e_wallet', 'cash')
+  payment_status enum('pending', 'completed', 'failed', 'refunded') [default: 'pending']
+  payment_date timestamp
+  due_date date
+  transaction_id varchar
+  payment_gateway_ref varchar // NEW - reference dari payment gateway
+  payment_gateway_response json // NEW - full response
+  receipt_file varchar
+  notes text
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table availability_calendar {
+  id integer [primary key]
+  apartment_id integer [not null]
+  date date [not null]
+  status enum('available', 'booked', 'blocked') [default: 'available']
+  booking_id integer // if status = booked
+  blocked_reason text // if status = blocked
+  price_override decimal(12,2) // untuk dynamic pricing
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  indexes {
+    (apartment_id, date) [unique]
+  }
+}
+
+Table reports {
+  id integer [primary key]
+  report_code varchar [unique, not null]
+  report_type enum('monthly_income', 'occupancy', 'tenant', 'financial', 'yearly') [not null]
+  title varchar [not null]
+  description text
+  period_start date [not null]
+  period_end date [not null]
+  filters json // stored filter parameters
+  report_data json // stored calculated data
+  generated_by integer [not null] // user_id
+  file_path varchar // if exported to file
+  status enum('generating', 'completed', 'failed') [default: 'generating']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table activity_logs {
+  id integer [primary key]
+  user_id integer [not null]
+  action varchar [not null] // 'create', 'update', 'delete', 'login', etc
+  entity_type varchar [not null] // 'booking', 'unit', 'user', etc
+  entity_id integer
+  old_data json
+  new_data json
+  ip_address varchar
+  user_agent text
+  created_at timestamp [default: `now()`]
+}
+
+Table unit_photos {
+  id integer [primary key]
+  apartment_id integer [not null]
+  photo_url varchar [not null]
+  photo_type enum('main', 'bedroom', 'bathroom', 'kitchen', 'living_room', 'balcony', 'other') [default: 'other']
+  caption varchar
+  display_order integer [default: 0]
+  is_cover boolean [default: false]
+  created_at timestamp [default: `now()`]
+}
+
+Table facilities {
+  id integer [primary key]
+  name varchar [not null]
+  description text
+  icon varchar
+  category enum('building', 'unit', 'area') [default: 'building']
+  status enum('active', 'inactive') [default: 'active']
+  created_at timestamp [default: `now()`]
+}
+
+Table apartment_facilities {
+  id integer [primary key]
+  apartment_id integer [not null]
+  facility_id integer [not null]
+  created_at timestamp [default: `now()`]
+}
+
+Table reviews {
+  id integer [primary key]
+  apartment_id integer [not null]
+  tenant_id integer [not null]
+  booking_id integer [not null]
+  rating integer [not null, note: '1-5 scale']
+  review_text text
+  photos varchar [note: 'JSON array of photo URLs']
+  is_approved boolean [default: false]
+  approved_by integer
+  approved_at timestamp
+  created_at timestamp [default: `now()`]
+}
+
+Table notifications {
+  id integer [primary key]
+  user_id integer [not null]
+  title varchar [not null]
+  message text [not null]
+  type enum('booking', 'payment', 'system', 'promotion') [default: 'system']
+  related_id integer
+  is_read boolean [default: false]
+  send_email boolean [default: false]
+  created_at timestamp [default: `now()`]
+}
+
+Table favorites {
+  id integer [primary key]
+  user_id integer [not null]
+  apartment_id integer [not null]
+  created_at timestamp [default: `now()`]
+  // optional: saved_note varchar
+}
+
+Table promotions {
+  id integer [primary key]
+  code varchar [unique]
+  title varchar [not null]
+  description text
+  type enum('percent', 'fixed_amount', 'seasonal', 'coupon', 'special_rate') [default: 'percent']
+  value decimal(12,4) [note: 'if percent -> 10.0 = 10% ; if fixed_amount -> currency amount']
+  apartment_id integer [note: 'nullable — if null, promotion is global/platform-wide']
+  start_date date
+  end_date date
+  min_nights integer
+  active boolean [default: true]
+  usage_limit integer [note: 'total uses allowed, nullable']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table payment_transactions {
+  id integer [primary key]
+  payment_id integer [not null]
+  transaction_reference varchar [unique, not null]
+  gateway_name varchar [not null] // 'midtrans', 'xendit', etc
+  gateway_transaction_id varchar
+  amount decimal(12,2) [not null]
+  status enum('initiated', 'pending', 'success', 'failed', 'expired') [not null]
+  payment_url varchar
+  callback_data json
+  error_message text
+  expired_at timestamp
+  paid_at timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+// Existing relationships
+Ref: apartments.owner_id > users.id
+Ref: bookings.apartment_id > apartments.id
+Ref: bookings.tenant_id > users.id
+Ref: bookings.approved_by > users.id // NEW
+Ref: payments.booking_id > bookings.id
+Ref: unit_photos.apartment_id > apartments.id
+Ref: apartment_facilities.apartment_id > apartments.id
+Ref: apartment_facilities.facility_id > facilities.id
+Ref: reviews.apartment_id > apartments.id
+Ref: reviews.tenant_id > users.id
+Ref: reviews.booking_id > bookings.id
+Ref: reviews.approved_by > users.id
+Ref: notifications.user_id > users.id
+Ref: favorites.user_id > users.id
+Ref: favorites.apartment_id > apartments.id
+Ref: promotions.apartment_id > apartments.id
+Ref: availability_calendar.apartment_id > apartments.id
+Ref: availability_calendar.booking_id > bookings.id
+Ref: reports.generated_by > users.id
+Ref: activity_logs.user_id > users.id
+Ref: payment_transactions.payment_id > payments.id
