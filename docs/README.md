@@ -93,18 +93,18 @@ vida-view/
 │       │   │   └── 📄 TenantProfile.jsx     📝 Profile
 │       │   │
 │       │   ├── 📁 owner/
-│       │   │   ├── 📄 OwnerDashboard.jsx    📝 Owner dashboard
-│       │   │   ├── 📄 MyUnits.jsx           📝 Manage units
+│       │   │   ├── 📄 OwnerDashboard.jsx    ✅ Owner dashboard
+│       │   │   ├── 📄 MyUnits.jsx           ✅ Manage units
 │       │   │   ├── 📄 UnitBookings.jsx      📝 Unit bookings
 │       │   │   └── 📄 FinancialReport.jsx   📝 Financial reports
 │       │   │
 │       │   ├── 📁 admin/
-│       │   │   ├── 📄 AdminDashboard.jsx    📝 Admin dashboard
-│       │   │   ├── 📄 UserManagement.jsx    📝 Manage users
-│       │   │   ├── 📄 BookingManagement.jsx 📝 Manage bookings
-│       │   │   ├── 📄 PaymentVerification.jsx 📝 Verify payments
-│       │   │   ├── 📄 PromotionManagement.jsx 📝 Manage promotions
-│       │   │   └── 📄 Reports.jsx           📝 Reports
+│       │   │   ├── 📄 AdminDashboard.jsx    ✅ Admin dashboard
+│       │   │   ├── 📄 UserManagement.jsx    ✅ Manage users
+│       │   │   ├── 📄 BookingManagement.jsx ✅ Manage bookings
+│       │   │   ├── 📄 PaymentVerification.jsx ✅ Verify payments
+│       │   │   ├── 📄 PromotionManagement.jsx ✅ Manage promotions
+│       │   │   └── 📄 Reports.jsx           ✅ Reports
 │       │   │
 │       │   └── 📁 booking/
 │       │       ├── 📄 BookingForm.jsx        ✅ Create booking
