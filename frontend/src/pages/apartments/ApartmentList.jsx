@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import apartmentsAPI from '../../api/apartments';
-import useAuthStore from '../../stores/authStore';
+import { useAuthStore } from '../../stores/authStore';
 import ApartmentCard from '../../components/apartment/ApartmentCard';
 import ApartmentFilters from '../../components/apartment/ApartmentFilters';
 import Pagination from '../../components/common/Pagination';

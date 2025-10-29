@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { usersAPI } from '../api/users';
 
-const useUserStore = create(
+export const useUserStore = create(
   persist(
     (set, get) => ({
       // State
@@ -107,5 +107,3 @@ const useUserStore = create(
     }
   )
 );
-
-export default useUserStore;

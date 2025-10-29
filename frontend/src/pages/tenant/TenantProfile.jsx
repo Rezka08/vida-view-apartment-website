@@ -11,8 +11,8 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import usersAPI from '../../api/users';
-import useAuthStore from '../../stores/authStore';
-import useUserStore from '../../stores/userStore';
+import { useAuthStore } from '../../stores/authStore';
+import { useUserStore } from '../../stores/userStore';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Card from '../../components/common/Card';

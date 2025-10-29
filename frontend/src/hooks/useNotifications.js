@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import useNotificationStore from '../stores/notificationStore';
+import { useNotificationStore } from '../stores/notificationStore';
 
 const useNotifications = () => {
   const {

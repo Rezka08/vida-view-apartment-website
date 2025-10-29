@@ -10,7 +10,7 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 import usersAPI from '../../api/users';
-import useUserStore from '../../stores/userStore';
+import { useUserStore } from '../../stores/userStore';
 import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';

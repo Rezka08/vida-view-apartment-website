@@ -5,8 +5,8 @@ import {
   ChartBarIcon,
   DocumentArrowDownIcon,
   CalendarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
 import adminAPI from '../../api/admin';
 import Chart from '../../components/dashboard/Chart';
@@ -190,7 +190,7 @@ const FinancialReport = () => {
             <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border border-green-200">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-green-800 font-medium">Total Pendapatan</span>
-                <TrendingUpIcon className="h-6 w-6 text-green-600" />
+                <ArrowTrendingUpIcon className="h-6 w-6 text-green-600" />
               </div>
               <p className="text-2xl font-bold text-green-900">
                 {formatCurrency(reportData?.totalRevenue || 0)}
@@ -287,9 +287,9 @@ const FinancialReport = () => {
                         growthRate >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}>
                         {growthRate >= 0 ? (
-                          <TrendingUpIcon className="h-4 w-4 mr-1" />
+                          <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
                         ) : (
-                          <TrendingDownIcon className="h-4 w-4 mr-1" />
+                          <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
                         )}
                         {Math.abs(growthRate)}%
                       </span>
@@ -327,7 +327,7 @@ const FinancialReport = () => {
         <div className="space-y-4">
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h4 className="font-semibold text-blue-900 mb-2 flex items-center">
-              <TrendingUpIcon className="h-5 w-5 mr-2" />
+              <ArrowTrendingUpIcon className="h-5 w-5 mr-2" />
               Performance Summary
             </h4>
             <ul className="space-y-2 text-sm text-blue-800">

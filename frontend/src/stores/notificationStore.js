@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '../api/axios';
 
-const useNotificationStore = create((set, get) => ({
+export const useNotificationStore = create((set, get) => ({
   // State
   notifications: [],
   unreadCount: 0,
@@ -121,5 +121,3 @@ const useNotificationStore = create((set, get) => ({
   // Clear error
   clearError: () => set({ error: null })
 }));
-
-export default useNotificationStore;

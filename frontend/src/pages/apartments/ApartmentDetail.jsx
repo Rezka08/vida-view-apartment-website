@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import apartmentsAPI from '../../api/apartments';
-import useAuthStore from '../../stores/authStore';
+import { useAuthStore } from '../../stores/authStore';
 import ImageGallery from '../../components/apartment/ImageGallery';
 import FacilityList from '../../components/apartment/FacilityList';
 import Button from '../../components/common/Button';

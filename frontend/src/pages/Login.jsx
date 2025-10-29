@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
-import useAuthStore from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { validateForm } from '../utils/validators';
@@ -156,39 +156,6 @@ const Login = () => {
             </p>
           </div>
         </form>
-
-        {/* Demo Accounts */}
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-xs text-center text-gray-500 mb-3">
-            Demo Accounts (untuk testing):
-          </p>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <button
-              onClick={() => handleDemoLogin('admin@vidaview.com')}
-              className="text-center p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
-            >
-              <p className="font-semibold">Admin</p>
-              <p className="text-gray-600 text-[10px]">admin@vidaview.com</p>
-            </button>
-            <button
-              onClick={() => handleDemoLogin('owner1@example.com')}
-              className="text-center p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
-            >
-              <p className="font-semibold">Owner</p>
-              <p className="text-gray-600 text-[10px]">owner1@example.com</p>
-            </button>
-            <button
-              onClick={() => handleDemoLogin('tenant1@example.com')}
-              className="text-center p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
-            >
-              <p className="font-semibold">Tenant</p>
-              <p className="text-gray-600 text-[10px]">tenant1@example.com</p>
-            </button>
-          </div>
-          <p className="text-xs text-center text-gray-500 mt-2">
-            Password: <code className="bg-gray-200 px-1 rounded">password123</code>
-          </p>
-        </div>
       </div>
     </div>
   );

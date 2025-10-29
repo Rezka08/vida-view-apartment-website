@@ -11,11 +11,8 @@ export default function ProtectedRoute({ children }) {
   return children
 }
 
-// src/routes/RoleRoute.jsx
-import { Navigate } from 'react-router-dom'
-import { useAuthStore } from '../stores/authStore'
-
-export default function RoleRoute({ children, allowedRoles }) {
+// RoleRoute component
+export function RoleRoute({ children, allowedRoles }) {
   const { user, isAuthenticated } = useAuthStore()
 
   if (!isAuthenticated) {

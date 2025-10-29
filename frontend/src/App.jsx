@@ -10,6 +10,8 @@ import DashboardLayout from './layouts/DashboardLayout'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import Facilities from './pages/Facilities'
+import Location from './pages/Location'
 import ApartmentList from './pages/apartments/ApartmentList'
 import ApartmentDetail from './pages/apartments/ApartmentDetail'
 
@@ -54,6 +56,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} />
+        <Route path="/facilities" element={<Facilities />} />
+        <Route path="/location" element={<Location />} />
         <Route path="/apartments" element={<ApartmentList />} />
         <Route path="/apartments/:id" element={<ApartmentDetail />} />
       </Route>

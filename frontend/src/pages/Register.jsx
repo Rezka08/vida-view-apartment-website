@@ -8,7 +8,7 @@ import {
   MapPinIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline';
-import useAuthStore from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import { validateForm } from '../utils/validators';
