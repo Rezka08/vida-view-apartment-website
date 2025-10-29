@@ -75,7 +75,7 @@ vida-view/
 │       │   ├── 📄 Navbar.jsx                ✅ Navigation bar
 │       │   └── 📄 Footer.jsx                ✅ Footer
 │       │
-│       ├── 📁 pages/                        📝 NEED TO CREATE
+│       ├── 📁 pages/                        ✅ COMPLETE
 │       │   ├── 📄 Home.jsx                  ✅ Landing page
 │       │   ├── 📄 Login.jsx                 ✅ Login page
 │       │   ├── 📄 Register.jsx              ✅ Register page
@@ -89,14 +89,14 @@ vida-view/
 │       │   │   ├── 📄 TenantDashboard.jsx   ✅ Tenant dashboard
 │       │   │   ├── 📄 MyBookings.jsx        ✅ My bookings
 │       │   │   ├── 📄 MyPayments.jsx        ✅ My payments
-│       │   │   ├── 📄 MyDocuments.jsx       📝 My documents
-│       │   │   └── 📄 TenantProfile.jsx     📝 Profile
+│       │   │   ├── 📄 MyDocuments.jsx       ✅ My documents
+│       │   │   └── 📄 TenantProfile.jsx     ✅ Profile
 │       │   │
 │       │   ├── 📁 owner/
 │       │   │   ├── 📄 OwnerDashboard.jsx    ✅ Owner dashboard
 │       │   │   ├── 📄 MyUnits.jsx           ✅ Manage units
-│       │   │   ├── 📄 UnitBookings.jsx      📝 Unit bookings
-│       │   │   └── 📄 FinancialReport.jsx   📝 Financial reports
+│       │   │   ├── 📄 UnitBookings.jsx      ✅ Unit bookings
+│       │   │   └── 📄 FinancialReport.jsx   ✅ Financial reports
 │       │   │
 │       │   ├── 📁 admin/
 │       │   │   ├── 📄 AdminDashboard.jsx    ✅ Admin dashboard
@@ -108,7 +108,7 @@ vida-view/
 │       │   │
 │       │   └── 📁 booking/
 │       │       ├── 📄 BookingForm.jsx        ✅ Create booking
-│       │       ├── 📄 BookingPayment.jsx     📝 Payment page
+│       │       ├── 📄 BookingPayment.jsx     ✅ Payment page
 │       │       └── 📄 BookingSuccess.jsx     ✅ Success page
 │       │
 │       ├── 📁 components/                    ✅ COMPLETE
