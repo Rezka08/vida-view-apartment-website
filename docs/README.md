@@ -44,40 +44,40 @@ vida-view/
 │   ├── 📄 README.md                         ✅ Frontend documentation
 │   │
 │   ├── 📁 public/
-│   │   └── 📄 vite.svg                      📝 Add your logos
+│   │   └── 📄 vite.svg                      ✅ Add your logos
 │   │
 │   └── 📁 src/
 │       ├── 📄 main.jsx                      ✅ React entry point
 │       ├── 📄 App.jsx                       ✅ Main app with routes
 │       ├── 📄 index.css                     ✅ Global styles
 │       │
-│       ├── 📁 api/                          🔨 NEED TO CREATE
+│       ├── 📁 api/                          🔨 PARTIALLY COMPLETE
 │       │   ├── 📄 axios.js                  ✅ Axios config
-│       │   ├── 📄 auth.js                   📝 Auth API calls
-│       │   ├── 📄 apartments.js             📝 Apartment API
-│       │   ├── 📄 bookings.js               📝 Booking API
-│       │   ├── 📄 payments.js               📝 Payment API
-│       │   ├── 📄 users.js                  📝 User API
-│       │   └── 📄 admin.js                  📝 Admin API
+│       │   ├── 📄 auth.js                   ✅ Auth API calls
+│       │   ├── 📄 apartments.js             ✅ Apartment API
+│       │   ├── 📄 bookings.js               ✅ Booking API
+│       │   ├── 📄 payments.js               ✅ Payment API
+│       │   ├── 📄 users.js                  ✅ User API
+│       │   └── 📄 admin.js                  ✅ Admin API
 │       │
 │       ├── 📁 stores/                       🔨 PARTIALLY COMPLETE
 │       │   ├── 📄 authStore.js              ✅ Auth state (Zustand)
-│       │   ├── 📄 userStore.js              📝 User state
-│       │   └── 📄 notificationStore.js      📝 Notification state
+│       │   ├── 📄 userStore.js              ✅ User state
+│       │   └── 📄 notificationStore.js      ✅ Notification state
 │       │
 │       ├── 📁 routes/                       ✅ Route guards
 │       │   ├── 📄 ProtectedRoute.jsx        ✅ Auth guard
 │       │   └── 📄 RoleRoute.jsx             ✅ Role guard
 │       │
-│       ├── 📁 layouts/                      📝 NEED TO CREATE
-│       │   ├── 📄 MainLayout.jsx            📝 Public pages layout
-│       │   ├── 📄 DashboardLayout.jsx       📝 Dashboard layout
-│       │   ├── 📄 Navbar.jsx                📝 Navigation bar
-│       │   └── 📄 Footer.jsx                📝 Footer
+│       ├── 📁 layouts/                      🔨 PARTIALLY COMPLETE
+│       │   ├── 📄 MainLayout.jsx            ✅ Public pages layout
+│       │   ├── 📄 DashboardLayout.jsx       ✅ Dashboard layout
+│       │   ├── 📄 Navbar.jsx                ✅ Navigation bar
+│       │   └── 📄 Footer.jsx                ✅ Footer
 │       │
 │       ├── 📁 pages/                        📝 NEED TO CREATE
-│       │   ├── 📄 Home.jsx                  📝 Landing page
-│       │   ├── 📄 Login.jsx                 📝 Login page
+│       │   ├── 📄 Home.jsx                  ✅ Landing page
+│       │   ├── 📄 Login.jsx                 ✅ Login page
 │       │   ├── 📄 Register.jsx              📝 Register page
 │       │   │
 │       │   ├── 📁 apartments/
@@ -111,15 +111,15 @@ vida-view/
 │       │       ├── 📄 BookingPayment.jsx     📝 Payment page
 │       │       └── 📄 BookingSuccess.jsx     📝 Success page
 │       │
-│       ├── 📁 components/                    📝 NEED TO CREATE
+│       ├── 📁 components/                    🔨 PARTIALLY COMPLETE
 │       │   ├── 📁 common/
-│       │   │   ├── 📄 Button.jsx            📝 Reusable button
-│       │   │   ├── 📄 Input.jsx             📝 Form input
-│       │   │   ├── 📄 Card.jsx              📝 Card component
-│       │   │   ├── 📄 Modal.jsx             📝 Modal dialog
-│       │   │   ├── 📄 Loading.jsx           📝 Loading spinner
-│       │   │   ├── 📄 Pagination.jsx        📝 Pagination
-│       │   │   └── 📄 Badge.jsx             📝 Badge/tag
+│       │   │   ├── 📄 Button.jsx            ✅ Reusable button
+│       │   │   ├── 📄 Input.jsx             ✅ Form input
+│       │   │   ├── 📄 Card.jsx              ✅ Card component
+│       │   │   ├── 📄 Modal.jsx             ✅ Modal dialog
+│       │   │   ├── 📄 Loading.jsx           ✅ Loading spinner
+│       │   │   ├── 📄 Pagination.jsx        ✅ Pagination
+│       │   │   └── 📄 Badge.jsx             ✅ Badge/tag
 │       │   │
 │       │   ├── 📁 apartment/
 │       │   │   ├── 📄 ApartmentCard.jsx     📝 Apartment card
@@ -137,24 +137,24 @@ vida-view/
 │       │       ├── 📄 Chart.jsx              📝 Chart component
 │       │       └── 📄 RecentActivity.jsx     📝 Activity list
 │       │
-│       ├── 📁 hooks/                         📝 NEED TO CREATE
+│       ├── 📁 hooks/                        📝 NEED TO CREATE
 │       │   ├── 📄 useAuth.js                📝 Auth hook
 │       │   ├── 📄 useApartments.js          📝 Apartments hook
 │       │   ├── 📄 useBookings.js            📝 Bookings hook
 │       │   └── 📄 useNotifications.js       📝 Notifications hook
 │       │
-│       └── 📁 utils/                         📝 NEED TO CREATE
-│           ├── 📄 constants.js              📝 App constants
-│           ├── 📄 helpers.js                📝 Helper functions
-│           ├── 📄 formatters.js             📝 Format functions
-│           └── 📄 validators.js             📝 Validation functions
+│       └── 📁 utils/                        🔨 PARTIALLY COMPLETE
+│           ├── 📄 constants.js              ✅ App constants
+│           ├── 📄 helpers.js                ✅ Helper functions
+│           ├── 📄 formatters.js             ✅ Format functions
+│           └── 📄 validators.js             ✅ Validation functions
 │
-├── 📁 database/                              ✅ COMPLETE
+├── 📁 database/                             ✅ COMPLETE
 │   ├── 📄 vidaview_schema.sql               ✅ Database schema
 │   ├── 📄 sample_data.sql                   ✅ Sample data
 │   └── 📄 ERD_Diagram.db                    ✅ ERD diagram
 │
-└── 📁 docs/                                  ✅ DOCUMENTATION
+└── 📁 docs/                                 ✅ DOCUMENTATION
     ├── 📄 PROJECT_STRUCTURE.md              ✅ Project overview
     ├── 📄 COMPLETE_SETUP_GUIDE.md           ✅ Setup instructions
     ├── 📄 Figma-Documentation.pdf           ✅ UI designs
