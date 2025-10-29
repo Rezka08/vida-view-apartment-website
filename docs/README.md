@@ -88,7 +88,7 @@ vida-view/
 │       │   ├── 📁 tenant/
 │       │   │   ├── 📄 TenantDashboard.jsx   ✅ Tenant dashboard
 │       │   │   ├── 📄 MyBookings.jsx        ✅ My bookings
-│       │   │   ├── 📄 MyPayments.jsx        📝 My payments
+│       │   │   ├── 📄 MyPayments.jsx        ✅ My payments
 │       │   │   ├── 📄 MyDocuments.jsx       📝 My documents
 │       │   │   └── 📄 TenantProfile.jsx     📝 Profile
 │       │   │
