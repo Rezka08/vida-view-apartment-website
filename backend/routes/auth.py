@@ -95,9 +95,9 @@ def login():
         user.last_login = datetime.utcnow()
         db.session.commit()
         
-        # Create tokens
-        access_token = create_access_token(identity=user.id)
-        refresh_token = create_refresh_token(identity=user.id)
+        # Create tokens (identity must be string for JWT-Extended)
+        access_token = create_access_token(identity=str(user.id))
+        refresh_token = create_refresh_token(identity=str(user.id))
         
         # Log activity
         log_activity(
@@ -125,7 +125,7 @@ def refresh():
     """Refresh access token"""
     try:
         current_user_id = get_jwt_identity()
-        access_token = create_access_token(identity=current_user_id)
+        access_token = create_access_token(identity=str(current_user_id))
         
         return jsonify({
             'access_token': access_token
@@ -139,7 +139,7 @@ def refresh():
 def get_current_user():
     """Get current user info"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         if not user:
@@ -157,7 +157,7 @@ def get_current_user():
 def change_password():
     """Change user password"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         if not user:
@@ -200,7 +200,7 @@ def change_password():
 def logout():
     """Logout user (client should remove token)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         
         # Log activity
         log_activity(

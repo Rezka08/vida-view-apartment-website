@@ -56,15 +56,15 @@ def role_required(*allowed_roles):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             verify_jwt_in_request()
-            current_user_id = get_jwt_identity()
+            current_user_id = int(get_jwt_identity())  # Convert string to int
             user = User.query.get(current_user_id)
-            
+
             if not user:
                 return {'message': 'User not found'}, 404
-            
+
             if user.role not in allowed_roles:
                 return {'message': 'Access denied. Insufficient permissions.'}, 403
-            
+
             return fn(*args, **kwargs)
         return wrapper
     return decorator
@@ -126,7 +126,7 @@ def calculate_months_between(start_date, end_date):
 def get_current_user():
     """Get current authenticated user"""
     verify_jwt_in_request()
-    current_user_id = get_jwt_identity()
+    current_user_id = int(get_jwt_identity())  # Convert string to int
     return User.query.get(current_user_id)
 
 def send_email_notification(to_email, subject, body):

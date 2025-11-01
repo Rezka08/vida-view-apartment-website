@@ -32,8 +32,10 @@ const DashboardLayout = () => {
   const getNavigation = () => {
     if (!user) return [];
 
+    // Dashboard item with correct href for each role
+    const dashboardHref = user.role === 'tenant' ? '/dashboard' : `/${user.role}/dashboard`;
     const commonItems = [
-      { name: 'Dashboard', href: `/${user.role}/dashboard`, icon: HomeIcon },
+      { name: 'Dashboard', href: dashboardHref, icon: HomeIcon },
     ];
 
     const roleSpecificItems = {
@@ -45,15 +47,15 @@ const DashboardLayout = () => {
         { name: 'Laporan', href: '/admin/reports', icon: ChartBarIcon },
       ],
       owner: [
-        { name: 'Kelola Unit', href: '/owner/apartments', icon: BuildingOfficeIcon },
+        { name: 'Kelola Unit', href: '/owner/units', icon: BuildingOfficeIcon },
         { name: 'Booking', href: '/owner/bookings', icon: CalendarIcon },
-        { name: 'Laporan Keuangan', href: '/owner/reports', icon: ChartBarIcon },
+        { name: 'Laporan Keuangan', href: '/owner/financial', icon: ChartBarIcon },
       ],
       tenant: [
         { name: 'Cari Unit', href: '/apartments', icon: BuildingOfficeIcon },
-        { name: 'Booking Saya', href: '/tenant/bookings', icon: CalendarIcon },
-        { name: 'Pembayaran', href: '/tenant/payments', icon: CreditCardIcon },
-        { name: 'Dokumen', href: '/tenant/documents', icon: DocumentTextIcon },
+        { name: 'Booking Saya', href: '/my-bookings', icon: CalendarIcon },
+        { name: 'Pembayaran', href: '/my-payments', icon: CreditCardIcon },
+        { name: 'Dokumen', href: '/my-documents', icon: DocumentTextIcon },
       ]
     };
 
@@ -84,7 +86,7 @@ const DashboardLayout = () => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

@@ -14,10 +14,26 @@ const axiosInstance = axios.create({
 // Request interceptor to add auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token')
+    // Try to get token from localStorage first
+    let token = localStorage.getItem('access_token')
+
+    // If not found, try to get from Zustand persist storage
+    if (!token) {
+      try {
+        const authStorage = localStorage.getItem('auth-storage')
+        if (authStorage) {
+          const parsed = JSON.parse(authStorage)
+          token = parsed.state?.token
+        }
+      } catch (e) {
+        console.error('Error parsing auth-storage:', e)
+      }
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+
     return config
   },
   (error) => {
@@ -39,7 +55,21 @@ axiosInstance.interceptors.response.use(
 
       try {
         // Try to refresh token
-        const refreshToken = localStorage.getItem('refresh_token')
+        let refreshToken = localStorage.getItem('refresh_token')
+
+        // If not found, try to get from Zustand persist storage
+        if (!refreshToken) {
+          try {
+            const authStorage = localStorage.getItem('auth-storage')
+            if (authStorage) {
+              const parsed = JSON.parse(authStorage)
+              refreshToken = parsed.state?.refreshToken
+            }
+          } catch (e) {
+            console.error('Error parsing auth-storage:', e)
+          }
+        }
+
         if (refreshToken) {
           const response = await axios.post(`${API_URL}/auth/refresh`, {}, {
             headers: {
@@ -50,6 +80,18 @@ axiosInstance.interceptors.response.use(
           const { access_token } = response.data
           localStorage.setItem('access_token', access_token)
 
+          // Update Zustand storage too
+          try {
+            const authStorage = localStorage.getItem('auth-storage')
+            if (authStorage) {
+              const parsed = JSON.parse(authStorage)
+              parsed.state.token = access_token
+              localStorage.setItem('auth-storage', JSON.stringify(parsed))
+            }
+          } catch (e) {
+            console.error('Error updating auth-storage:', e)
+          }
+
           // Retry original request with new token
           originalRequest.headers.Authorization = `Bearer ${access_token}`
           return axiosInstance(originalRequest)
@@ -59,6 +101,7 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user')
+        localStorage.removeItem('auth-storage')
         window.location.href = '/login'
         return Promise.reject(refreshError)
       }

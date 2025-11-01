@@ -14,9 +14,9 @@ def create_app(config_name='development'):
     
     # Initialize extensions
     db.init_app(app)
-    CORS(app, origins=app.config['CORS_ORIGINS'])
+    CORS(app, origins=app.config['CORS_ORIGINS'], supports_credentials=True)
     jwt = JWTManager(app)
-    
+
     # Create upload folder if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
@@ -73,13 +73,13 @@ def create_app(config_name='development'):
         return jsonify({
             'message': 'Token has expired'
         }), 401
-    
+
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
         return jsonify({
             'message': 'Invalid token'
         }), 401
-    
+
     @jwt.unauthorized_loader
     def missing_token_callback(error):
         return jsonify({

@@ -45,6 +45,10 @@ const Login = () => {
     
     try {
       await login(formData);
+
+      // Wait a bit to ensure state is saved in localStorage
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       // Redirect based on role
       const user = useAuthStore.getState().user;
       if (user.role === 'admin') {

@@ -49,11 +49,12 @@ export const useAuthStore = create(
           const response = await axios.post('/auth/login', credentials)
           const { access_token, refresh_token, user } = response.data
 
-          // Store tokens and user
+          // Store tokens and user in BOTH places for immediate access
           localStorage.setItem('access_token', access_token)
           localStorage.setItem('refresh_token', refresh_token)
           localStorage.setItem('user', JSON.stringify(user))
 
+          // Update Zustand state
           set({
             user,
             token: access_token,
@@ -62,17 +63,13 @@ export const useAuthStore = create(
             isLoading: false,
           })
 
-          toast.success('Login berhasil!')
-          
-          // Redirect based on role
-          if (user.role === 'admin') {
-            window.location.href = '/admin/dashboard'
-          } else if (user.role === 'owner') {
-            window.location.href = '/owner/dashboard'
-          } else {
-            window.location.href = '/dashboard'
-          }
+          // Wait for localStorage to be flushed
+          await new Promise(resolve => setTimeout(resolve, 200))
 
+          toast.success('Login berhasil!')
+
+          // Don't redirect here - let the Login component handle it
+          // This ensures state is fully ready before redirect
           return { success: true }
         } catch (error) {
           set({ isLoading: false })
