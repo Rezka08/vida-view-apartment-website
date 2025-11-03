@@ -191,7 +191,7 @@ const Home = () => {
             <div className="h-96 bg-gray-200 rounded-lg overflow-hidden">
               {/* Map placeholder */}
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.521260322283!2d106.8195613!3d-6.194830399999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f5390917b759%3A0x6b45e67356080477!2sBundle!5e0!3m2!1sen!2sid!4v1234567890"
+                src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d1299.4816185353466!2d119.44139523808344!3d-5.15502298300159!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1svida%20view!5e1!3m2!1sid!2sid!4v1762091008318!5m2!1sid!2sid"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

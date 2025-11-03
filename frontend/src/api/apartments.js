@@ -8,6 +8,12 @@ export const apartmentsAPI = {
     return response.data;
   },
 
+  // Get my units (Owner only)
+  getMyUnits: async (params = {}) => {
+    const response = await api.get('/apartments/my-units', { params });
+    return response.data;
+  },
+
   // Get single apartment by ID
   getApartment: async (id) => {
     const response = await api.get(`/apartments/${id}`);

@@ -90,7 +90,7 @@ function App() {
           </RoleRoute>
         } />
         <Route path="/profile" element={
-          <RoleRoute allowedRoles={['tenant']}>
+          <RoleRoute allowedRoles={['tenant', 'owner', 'admin']}>
             <TenantProfile />
           </RoleRoute>
         } />
@@ -135,6 +135,11 @@ function App() {
             <FinancialReport />
           </RoleRoute>
         } />
+        <Route path="/profile" element={
+          <RoleRoute allowedRoles={['tenant', 'owner', 'admin']}>
+            <TenantProfile />
+          </RoleRoute>
+        } />
       </Route>
 
       {/* Protected Routes - Admin */}
@@ -167,6 +172,11 @@ function App() {
         <Route path="/admin/reports" element={
           <RoleRoute allowedRoles={['admin']}>
             <Reports />
+          </RoleRoute>
+        } />
+        <Route path="/profile" element={
+          <RoleRoute allowedRoles={['tenant', 'owner', 'admin']}>
+            <TenantProfile />
           </RoleRoute>
         } />
       </Route>

@@ -67,7 +67,7 @@ const FinancialReport = () => {
   };
 
   const handleExport = (format) => {
-    toast.info(`Export ${format.toUpperCase()} akan segera tersedia`);
+    toast(`Export ${format.toUpperCase()} akan segera tersedia`, { icon: 'ℹ️' });
   };
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);

@@ -75,6 +75,50 @@ def get_apartments():
     except Exception as e:
         return jsonify({'message': str(e)}), 500
 
+@apartments_bp.route('/my-units', methods=['GET'])
+@jwt_required()
+@role_required('owner')
+def get_my_units():
+    """Get apartments owned by current user (Owner only)"""
+    try:
+        current_user_id = int(get_jwt_identity())
+
+        # Get query parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        status = request.args.get('status')
+
+        # Build query - filter by owner
+        query = Apartment.query.filter_by(owner_id=current_user_id)
+
+        # Apply status filter
+        if status:
+            query = query.filter(Apartment.availability_status == status)
+
+        # Order by created_at desc
+        query = query.order_by(Apartment.created_at.desc())
+
+        # Paginate
+        result = paginate_query(query, page, per_page)
+
+        # Format response
+        apartments = [apt.to_dict(include_relations=True) for apt in result['items']]
+
+        return jsonify({
+            'apartments': apartments,
+            'pagination': {
+                'page': result['page'],
+                'per_page': result['per_page'],
+                'total': result['total'],
+                'pages': result['pages'],
+                'has_next': result['has_next'],
+                'has_prev': result['has_prev']
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
 @apartments_bp.route('/<int:apartment_id>', methods=['GET'])
 def get_apartment(apartment_id):
     """Get single apartment details"""
@@ -108,7 +152,7 @@ def get_apartment(apartment_id):
 def create_apartment():
     """Create new apartment (Owner/Admin only)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         data = request.get_json()
@@ -183,7 +227,7 @@ def create_apartment():
 def update_apartment(apartment_id):
     """Update apartment (Owner/Admin only)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         apartment = Apartment.query.get(apartment_id)
@@ -251,7 +295,7 @@ def update_apartment(apartment_id):
 def delete_apartment(apartment_id):
     """Delete apartment (Owner/Admin only)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         apartment = Apartment.query.get(apartment_id)
@@ -301,7 +345,7 @@ def delete_apartment(apartment_id):
 def upload_photo(apartment_id):
     """Upload apartment photo"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         apartment = Apartment.query.get(apartment_id)
@@ -348,7 +392,7 @@ def upload_photo(apartment_id):
 def toggle_favorite(apartment_id):
     """Add/remove apartment from favorites"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         
         apartment = Apartment.query.get(apartment_id)
         
@@ -391,7 +435,7 @@ def toggle_favorite(apartment_id):
 def get_favorites():
     """Get user's favorite apartments"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         
         favorites = Favorite.query.filter_by(user_id=current_user_id).all()
         

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { PlusIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import apartmentsAPI from '../../api/apartments';
 import ApartmentCard from '../../components/apartment/ApartmentCard';
@@ -8,6 +8,7 @@ import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Pagination from '../../components/common/Pagination';
 import Loading from '../../components/common/Loading';
+import AddUnitModal from '../../components/owner/AddUnitModal';
 
 const MyUnits = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const MyUnits = () => {
   const [filter, setFilter] = useState('all');
   const [selectedApartment, setSelectedApartment] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ const MyUnits = () => {
         per_page: pagination.per_page,
         status: filter !== 'all' ? filter : undefined
       };
-      const response = await apartmentsAPI.getApartments(params);
+      const response = await apartmentsAPI.getMyUnits(params);
       setApartments(response.apartments);
       setPagination(response.pagination);
     } catch (error) {
@@ -55,13 +57,17 @@ const MyUnits = () => {
     }
   };
 
+  const handleAddSuccess = () => {
+    fetchApartments(); // Refresh list after adding
+  };
+
   if (loading && apartments.length === 0) return <Loading fullScreen text="Memuat unit..." />;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Unit Saya</h1>
-        <Button onClick={() => toast.info('Fitur tambah unit akan segera tersedia')}>
+        <Button onClick={() => setShowAddModal(true)}>
           <PlusIcon className="h-5 w-5 mr-2" />
           Tambah Unit
         </Button>
@@ -97,7 +103,7 @@ const MyUnits = () => {
                     <EyeIcon className="h-5 w-5 text-purple-600" />
                   </button>
                   <button
-                    onClick={() => toast.info('Fitur edit akan segera tersedia')}
+                    onClick={() => toast('Fitur edit akan segera tersedia', { icon: 'ℹ️' })}
                     className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
                   >
                     <PencilIcon className="h-5 w-5 text-blue-600" />
@@ -127,7 +133,7 @@ const MyUnits = () => {
         <div className="text-center py-16 bg-white rounded-lg">
           <BuildingOfficeIcon className="h-16 w-16 mx-auto text-gray-400 mb-4" />
           <p className="text-gray-600 mb-4">Belum ada unit</p>
-          <Button onClick={() => toast.info('Fitur tambah unit akan segera tersedia')}>
+          <Button onClick={() => setShowAddModal(true)}>
             Tambah Unit Pertama
           </Button>
         </div>
@@ -150,6 +156,12 @@ const MyUnits = () => {
           </Button>
         </div>
       </Modal>
+
+      <AddUnitModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={handleAddSuccess}
+      />
     </div>
   );
 };

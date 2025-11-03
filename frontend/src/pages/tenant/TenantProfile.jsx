@@ -8,7 +8,8 @@ import {
   CalendarIcon,
   CameraIcon,
   KeyIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import usersAPI from '../../api/users';
 import { useAuthStore } from '../../stores/authStore';
@@ -24,11 +25,12 @@ import { validateForm } from '../../utils/validators';
 const TenantProfile = () => {
   const { user, updateUser, changePassword } = useAuthStore();
   const { profile, fetchProfile, uploadProfilePhoto } = useUserStore();
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   
   const [profileData, setProfileData] = useState({
     full_name: '',
@@ -89,28 +91,42 @@ const TenantProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validationErrors = validateForm(profileData, {
       full_name: { required: true, label: 'Nama Lengkap' },
       email: { required: true, email: true, label: 'Email' },
       phone: { required: true, phone: true, label: 'Nomor Telepon' }
     });
-    
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    
+
     setSaving(true);
     try {
       const response = await usersAPI.updateProfile(profileData);
       updateUser(response.user);
       toast.success('Profil berhasil diperbarui!');
+      setIsEditing(false);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal memperbarui profil');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleCancelEdit = () => {
+    setProfileData({
+      full_name: profile?.full_name || '',
+      email: profile?.email || '',
+      phone: profile?.phone || '',
+      address: profile?.address || '',
+      birth_date: profile?.birth_date || '',
+      id_card_number: profile?.id_card_number || ''
+    });
+    setErrors({});
+    setIsEditing(false);
   };
 
   const handlePhotoUpload = async (e) => {
@@ -279,6 +295,7 @@ const TenantProfile = () => {
                 onChange={handleChange}
                 error={errors.full_name}
                 icon={<UserCircleIcon className="h-5 w-5" />}
+                disabled={!isEditing}
                 required
               />
 
@@ -291,6 +308,7 @@ const TenantProfile = () => {
                   onChange={handleChange}
                   error={errors.email}
                   icon={<EnvelopeIcon className="h-5 w-5" />}
+                  disabled={!isEditing}
                   required
                 />
 
@@ -302,6 +320,7 @@ const TenantProfile = () => {
                   onChange={handleChange}
                   error={errors.phone}
                   icon={<PhoneIcon className="h-5 w-5" />}
+                  disabled={!isEditing}
                   required
                 />
               </div>
@@ -314,6 +333,7 @@ const TenantProfile = () => {
                 error={errors.address}
                 icon={<MapPinIcon className="h-5 w-5" />}
                 placeholder="Alamat lengkap"
+                disabled={!isEditing}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -325,6 +345,7 @@ const TenantProfile = () => {
                   onChange={handleChange}
                   error={errors.birth_date}
                   icon={<CalendarIcon className="h-5 w-5" />}
+                  disabled={!isEditing}
                 />
 
                 <Input
@@ -335,24 +356,37 @@ const TenantProfile = () => {
                   error={errors.id_card_number}
                   placeholder="16 digit nomor KTP"
                   maxLength={16}
+                  disabled={!isEditing}
                 />
               </div>
 
               <div className="flex justify-end space-x-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={loadProfile}
-                >
-                  Batal
-                </Button>
-                <Button
-                  type="submit"
-                  loading={saving}
-                  disabled={saving}
-                >
-                  Simpan Perubahan
-                </Button>
+                {!isEditing ? (
+                  <Button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <PencilIcon className="h-5 w-5 mr-2" />
+                    Edit Profil
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                    >
+                      Batal
+                    </Button>
+                    <Button
+                      type="submit"
+                      loading={saving}
+                      disabled={saving}
+                    >
+                      Simpan Perubahan
+                    </Button>
+                  </>
+                )}
               </div>
             </form>
           </Card>

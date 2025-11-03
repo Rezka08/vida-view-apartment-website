@@ -38,7 +38,7 @@ const Reports = () => {
   };
 
   const handleExport = (type) => {
-    toast.info(`Export ${type} akan segera tersedia`);
+    toast(`Export ${type} akan segera tersedia`, { icon: 'ℹ️' });
   };
 
   if (loading) return <Loading fullScreen text="Memuat laporan..." />;

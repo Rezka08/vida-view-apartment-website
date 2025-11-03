@@ -92,7 +92,7 @@ const ApartmentDetail = () => {
       navigate('/login');
       return;
     }
-    toast.info('Fitur hubungi pemilik akan segera tersedia');
+    toast('Fitur hubungi pemilik akan segera tersedia', { icon: 'ℹ️' });
   };
 
   if (loading) {
