@@ -5,6 +5,7 @@ from utils import (role_required, generate_booking_code, generate_payment_code,
                    calculate_total_amount, create_notification, log_activity,
                    validate_dates, check_apartment_availability, calculate_months_between)
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 bookings_bp = Blueprint('bookings', __name__, url_prefix='/api/bookings')
 
@@ -13,7 +14,7 @@ bookings_bp = Blueprint('bookings', __name__, url_prefix='/api/bookings')
 def get_bookings():
     """Get bookings based on user role"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         page = request.args.get('page', 1, type=int)
@@ -57,21 +58,27 @@ def get_bookings():
 def get_booking(booking_id):
     """Get single booking details"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         booking = Booking.query.get(booking_id)
-        
+
         if not booking:
             return jsonify({'message': 'Booking not found'}), 404
-        
+
         # Check access permission
-        if user.role == 'tenant' and booking.tenant_id != current_user_id:
-            return jsonify({'message': 'Access denied'}), 403
-        
-        if user.role == 'owner' and booking.apartment.owner_id != current_user_id:
-            return jsonify({'message': 'Access denied'}), 403
-        
+        # Admin can access all bookings
+        if user.role == 'admin':
+            pass  # Admin has full access
+        # Tenant can only access their own bookings
+        elif user.role == 'tenant':
+            if booking.tenant_id != current_user_id:
+                return jsonify({'message': 'Access denied'}), 403
+        # Owner can only access bookings for their apartments
+        elif user.role == 'owner':
+            if booking.apartment.owner_id != current_user_id:
+                return jsonify({'message': 'Access denied'}), 403
+
         return jsonify(booking.to_dict(include_relations=True)), 200
         
     except Exception as e:
@@ -83,7 +90,7 @@ def get_booking(booking_id):
 def create_booking():
     """Create new booking"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         data = request.get_json()
@@ -125,8 +132,8 @@ def create_booking():
         
         monthly_rent = apartment.price_per_month
         deposit = apartment.deposit_amount or monthly_rent
-        utility_deposit = data.get('utility_deposit', monthly_rent * 0.2)  # 20% of monthly rent
-        admin_fee = data.get('admin_fee', 500000)  # Default admin fee
+        utility_deposit = data.get('utility_deposit', monthly_rent * Decimal('0.2'))  # 20% of monthly rent
+        admin_fee = data.get('admin_fee', Decimal('500000'))  # Default admin fee
         
         total_amount = calculate_total_amount(
             monthly_rent, total_months, deposit, utility_deposit, admin_fee
@@ -207,7 +214,7 @@ def create_booking():
 def approve_booking(booking_id):
     """Approve booking (Owner/Admin only)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         booking = Booking.query.get(booking_id)
@@ -261,7 +268,7 @@ def approve_booking(booking_id):
 def reject_booking(booking_id):
     """Reject booking (Owner/Admin only)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         data = request.get_json()
@@ -317,7 +324,7 @@ def reject_booking(booking_id):
 def cancel_booking(booking_id):
     """Cancel booking"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         booking = Booking.query.get(booking_id)
@@ -382,7 +389,7 @@ def cancel_booking(booking_id):
 def update_booking(booking_id):
     """Update booking (Admin only)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         
         booking = Booking.query.get(booking_id)
         

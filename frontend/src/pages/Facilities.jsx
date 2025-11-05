@@ -25,7 +25,9 @@ const Facilities = () => {
     { id: 'rekreasi', label: 'Rekreasi' },
     { id: 'wellness', label: 'Wellness' },
     { id: 'teknologi', label: 'Teknologi' },
-    { id: 'sosial', label: 'Sosial' }
+    { id: 'sosial', label: 'Sosial' },
+    { id: 'minimarket', label: 'Minimarket' },
+    { id: 'cafe', label: 'Cafe & Lounge' }
   ];
 
   const facilities = [
@@ -181,31 +183,31 @@ const Facilities = () => {
     },
     {
       icon: FireIcon,
-      title: 'Spa & Sauna',
-      category: 'wellness',
-      badge: 'Wellness',
+      title: 'Cafe & Lounge',
+      category: 'cafe',
+      badge: 'Cafe & Lounge',
       badgeColor: 'bg-purple-100 text-purple-800',
-      description: 'Fasilitas spa dan sauna untuk relaksasi',
+      description: 'Fasilitas cafe dan lounge untuk bersantai',
       features: [
-        'Sauna room',
-        'Steam room',
-        'Massage service',
-        'Relaxation area'
+        'Cafe dengan menu sehat',
+        'Co-working space',
+        'Live music',
+        'Comfortable seating'
       ],
       color: 'purple'
     },
     {
       icon: SparklesIcon,
-      title: 'Air Quality System',
-      category: 'teknologi',
-      badge: 'Teknologi',
+      title: 'Indomaret 24/7',
+      category: 'Minimarket',
+      badge: 'Minimarket',
       badgeColor: 'bg-blue-100 text-blue-800',
-      description: 'Sistem ventilasi dan filtrasi udara di seluruh area',
+      description: 'Minimarket yang buka 24 jam untuk kebutuhan sehari-hari',
       features: [
-        'HEPA filter',
-        'Air purifier',
+        'Snacks & beverages',
+        'Kebutuhan rumah tangga',
         'Fresh air circulation',
-        'Temperature control'
+        ''
       ],
       color: 'blue'
     }

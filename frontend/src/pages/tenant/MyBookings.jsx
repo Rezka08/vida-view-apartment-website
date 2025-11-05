@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import bookingsAPI from '../../api/bookings';
 import BookingCard from '../../components/booking/BookingCard';
-import Badge from '../../components/common/Badge';
+import BookingDetailModal from '../../components/booking/BookingDetailModal';
 import Button from '../../components/common/Button';
 import Loading from '../../components/common/Loading';
 import Modal from '../../components/common/Modal';
@@ -12,6 +12,7 @@ const MyBookings = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
@@ -29,6 +30,11 @@ const MyBookings = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetail = (booking) => {
+    setSelectedBooking(booking);
+    setShowDetailModal(true);
   };
 
   const handleCancelBooking = async () => {
@@ -85,7 +91,7 @@ const MyBookings = () => {
         <div className="space-y-4">
           {bookings.map((booking) => (
             <div key={booking.id} className="relative">
-              <BookingCard booking={booking} />
+              <BookingCard booking={booking} onViewDetail={handleViewDetail} />
               {booking.status === 'pending' && (
                 <div className="absolute top-4 right-4">
                   <Button
@@ -111,6 +117,13 @@ const MyBookings = () => {
           </Button>
         </div>
       )}
+
+      {/* Detail Modal */}
+      <BookingDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        booking={selectedBooking}
+      />
 
       {/* Cancel Modal */}
       <Modal

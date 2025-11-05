@@ -11,7 +11,7 @@ payments_bp = Blueprint('payments', __name__, url_prefix='/api/payments')
 def get_payments():
     """Get payments based on user role"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         page = request.args.get('page', 1, type=int)
@@ -55,7 +55,7 @@ def get_payments():
 def get_payment(payment_id):
     """Get single payment details"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         payment = Payment.query.get(payment_id)
@@ -65,11 +65,17 @@ def get_payment(payment_id):
         
         # Check access permission
         booking = payment.booking
-        if user.role == 'tenant' and booking.tenant_id != current_user_id:
-            return jsonify({'message': 'Access denied'}), 403
-        
-        if user.role == 'owner' and booking.apartment.owner_id != current_user_id:
-            return jsonify({'message': 'Access denied'}), 403
+        # Admin can access all
+        if user.role == 'admin':
+            pass  # Admin has full access
+        # Tenant can only access their own payments
+        elif user.role == 'tenant':
+            if booking.tenant_id != current_user_id:
+                return jsonify({'message': 'Access denied'}), 403
+        # Owner can only access payments for their apartments
+        elif user.role == 'owner':
+            if booking.apartment.owner_id != current_user_id:
+                return jsonify({'message': 'Access denied'}), 403
         
         data = payment.to_dict()
         data['booking'] = booking.to_dict(include_relations=True)
@@ -85,7 +91,7 @@ def get_payment(payment_id):
 def create_payment():
     """Create new payment record (Admin only)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         data = request.get_json()
         
         # Validate required fields
@@ -146,7 +152,7 @@ def create_payment():
 def confirm_payment(payment_id):
     """Confirm payment (upload proof)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         payment = Payment.query.get(payment_id)
@@ -213,7 +219,7 @@ def confirm_payment(payment_id):
 def verify_payment(payment_id):
     """Verify payment (Owner/Admin only)"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         payment = Payment.query.get(payment_id)
@@ -283,7 +289,7 @@ def verify_payment(payment_id):
 def get_booking_payments(booking_id):
     """Get all payments for a booking"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
         
         booking = Booking.query.get(booking_id)
@@ -292,11 +298,17 @@ def get_booking_payments(booking_id):
             return jsonify({'message': 'Booking not found'}), 404
         
         # Check permission
-        if user.role == 'tenant' and booking.tenant_id != current_user_id:
-            return jsonify({'message': 'Access denied'}), 403
-        
-        if user.role == 'owner' and booking.apartment.owner_id != current_user_id:
-            return jsonify({'message': 'Access denied'}), 403
+        # Admin can access all
+        if user.role == 'admin':
+            pass  # Admin has full access
+        # Tenant can only access their own bookings
+        elif user.role == 'tenant':
+            if booking.tenant_id != current_user_id:
+                return jsonify({'message': 'Access denied'}), 403
+        # Owner can only access bookings for their apartments
+        elif user.role == 'owner':
+            if booking.apartment.owner_id != current_user_id:
+                return jsonify({'message': 'Access denied'}), 403
         
         payments = Payment.query.filter_by(booking_id=booking_id).order_by(Payment.created_at.desc()).all()
         

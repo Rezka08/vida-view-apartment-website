@@ -6,11 +6,10 @@ import {
   XMarkIcon,
   EyeIcon,
   CalendarIcon,
-  UserIcon,
-  HomeIcon
+  UserIcon
 } from '@heroicons/react/24/outline';
 import bookingsAPI from '../../api/bookings';
-import BookingCard from '../../components/booking/BookingCard';
+import BookingDetailModal from '../../components/booking/BookingDetailModal';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
@@ -323,98 +322,11 @@ const UnitBookings = () => {
       )}
 
       {/* Detail Modal */}
-      <Modal
+      <BookingDetailModal
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
-        title="Detail Booking"
-        size="lg"
-      >
-        {selectedBooking && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-600">Kode Booking</p>
-                <p className="font-medium text-gray-900">{selectedBooking.booking_code}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Status</p>
-                <Badge status={selectedBooking.status}>
-                  {getStatusText(selectedBooking.status, 'booking')}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="font-semibold text-gray-900 mb-2">Informasi Penyewa</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Nama</span>
-                  <span className="font-medium">{selectedBooking.tenant?.full_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Email</span>
-                  <span className="font-medium">{selectedBooking.tenant?.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Telepon</span>
-                  <span className="font-medium">{selectedBooking.tenant?.phone}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="font-semibold text-gray-900 mb-2">Informasi Unit</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Nomor Unit</span>
-                  <span className="font-medium">{selectedBooking.apartment?.unit_number}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tipe</span>
-                  <span className="font-medium">{selectedBooking.apartment?.unit_type}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="font-semibold text-gray-900 mb-2">Detail Pembayaran</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Sewa Bulanan</span>
-                  <span className="font-medium">{formatCurrency(selectedBooking.monthly_rent)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Durasi</span>
-                  <span className="font-medium">{selectedBooking.total_months} Bulan</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Deposit</span>
-                  <span className="font-medium">{formatCurrency(selectedBooking.deposit_amount)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Deposit Utilitas</span>
-                  <span className="font-medium">{formatCurrency(selectedBooking.utility_deposit)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Biaya Admin</span>
-                  <span className="font-medium">{formatCurrency(selectedBooking.admin_fee)}</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t font-semibold">
-                  <span className="text-gray-900">Total</span>
-                  <span className="text-purple-600">{formatCurrency(selectedBooking.total_amount)}</span>
-                </div>
-              </div>
-            </div>
-
-            {selectedBooking.notes && (
-              <div className="border-t border-gray-200 pt-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Catatan</h4>
-                <p className="text-gray-600">{selectedBooking.notes}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
+        booking={selectedBooking}
+      />
 
       {/* Action Modal */}
       <Modal

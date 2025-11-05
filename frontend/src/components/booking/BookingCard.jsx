@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarIcon, HomeIcon, BanknotesIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import Badge from '../common/Badge';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { getStatusText } from '../../utils/helpers';
 
-const BookingCard = ({ booking }) => {
+const BookingCard = ({ booking, onViewDetail }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
@@ -53,12 +53,12 @@ const BookingCard = ({ booking }) => {
         <span className="text-sm text-gray-500">
           {booking.total_months} bulan • {formatCurrency(booking.monthly_rent)}/bulan
         </span>
-        <Link
-          to={`/my-bookings/${booking.id}`}
+        <button
+          onClick={() => onViewDetail && onViewDetail(booking)}
           className="text-sm text-purple-600 hover:text-purple-700 font-medium"
         >
           Lihat Detail →
-        </Link>
+        </button>
       </div>
     </div>
   );

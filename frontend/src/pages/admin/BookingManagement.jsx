@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast';
 import { MagnifyingGlassIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import bookingsAPI from '../../api/bookings';
 import BookingCard from '../../components/booking/BookingCard';
-import Badge from '../../components/common/Badge';
+import BookingDetailModal from '../../components/booking/BookingDetailModal';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Pagination from '../../components/common/Pagination';
@@ -15,6 +15,7 @@ const BookingManagement = () => {
   const [pagination, setPagination] = useState({ page: 1, per_page: 10, total: 0, pages: 0 });
   const [filters, setFilters] = useState({ search: '', status: '' });
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [showActionModal, setShowActionModal] = useState(false);
   const [actionType, setActionType] = useState('');
   const [reason, setReason] = useState('');
@@ -36,6 +37,11 @@ const BookingManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetail = (booking) => {
+    setSelectedBooking(booking);
+    setShowDetailModal(true);
   };
 
   const handleAction = async () => {
@@ -94,7 +100,7 @@ const BookingManagement = () => {
         <div className="space-y-4">
           {bookings.map((booking) => (
             <div key={booking.id} className="bg-white rounded-lg shadow-md p-6">
-              <BookingCard booking={booking} />
+              <BookingCard booking={booking} onViewDetail={handleViewDetail} />
               {booking.status === 'pending' && (
                 <div className="flex space-x-2 mt-4 pt-4 border-t">
                   <Button
@@ -140,6 +146,14 @@ const BookingManagement = () => {
         />
       )}
 
+      {/* Detail Modal */}
+      <BookingDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        booking={selectedBooking}
+      />
+
+      {/* Action Modal */}
       <Modal
         isOpen={showActionModal}
         onClose={() => setShowActionModal(false)}
