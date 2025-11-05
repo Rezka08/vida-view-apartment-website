@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  HomeIcon, 
-  CalendarIcon, 
+import {
+  HomeIcon,
+  CalendarIcon,
   BanknotesIcon,
-  HeartIcon 
+  HeartIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import bookingsAPI from '../../api/bookings';
@@ -12,6 +12,7 @@ import paymentsAPI from '../../api/payment';
 import apartmentsAPI from '../../api/apartments';
 import StatsCard from '../../components/dashboard/StatsCard';
 import BookingCard from '../../components/booking/BookingCard';
+import BookingDetailModal from '../../components/booking/BookingDetailModal';
 import Loading from '../../components/common/Loading';
 
 const TenantDashboard = () => {
@@ -22,6 +23,8 @@ const TenantDashboard = () => {
   });
   const [recentBookings, setRecentBookings] = useState([]);
   const [upcomingPayments, setUpcomingPayments] = useState([]);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,15 +37,15 @@ const TenantDashboard = () => {
       // Fetch bookings
       const bookingsResponse = await bookingsAPI.getBookings({ per_page: 5 });
       setRecentBookings(bookingsResponse.bookings);
-      
+
       const activeBookings = bookingsResponse.bookings.filter(
         b => b.status === 'active' || b.status === 'confirmed'
       ).length;
 
       // Fetch payments
-      const paymentsResponse = await paymentsAPI.getPayments({ 
+      const paymentsResponse = await paymentsAPI.getPayments({
         status: 'pending',
-        per_page: 5 
+        per_page: 5
       });
       setUpcomingPayments(paymentsResponse.payments);
 
@@ -60,6 +63,11 @@ const TenantDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetail = (booking) => {
+    setSelectedBooking(booking);
+    setShowDetailModal(true);
   };
 
   if (loading) {
@@ -138,7 +146,7 @@ const TenantDashboard = () => {
         {recentBookings.length > 0 ? (
           <div className="space-y-4">
             {recentBookings.map((booking) => (
-              <BookingCard key={booking.id} booking={booking} />
+              <BookingCard key={booking.id} booking={booking} onViewDetail={handleViewDetail} />
             ))}
           </div>
         ) : (
@@ -198,6 +206,13 @@ const TenantDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Detail Modal */}
+      <BookingDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        booking={selectedBooking}
+      />
     </div>
   );
 };
