@@ -7,7 +7,8 @@ import {
   BoltIcon,
   FireIcon,
   TruckIcon,
-  HeartIcon as HeartOutline
+  HeartIcon as HeartOutline,
+  ArchiveBoxIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import apartmentsAPI from '../../api/apartments';
@@ -78,6 +79,11 @@ const ApartmentDetail = () => {
       return;
     }
 
+    if (apartment.is_archived) {
+      toast.error('Unit ini sudah tidak tersedia untuk booking baru');
+      return;
+    }
+
     if (apartment.availability_status !== 'available') {
       toast.error('Unit ini tidak tersedia');
       return;
@@ -145,12 +151,36 @@ const ApartmentDetail = () => {
                   </h1>
                   <p className="text-lg text-gray-600">{apartment.unit_type}</p>
                 </div>
-                <div>
+                <div className="flex flex-col gap-2">
+                  {apartment.is_archived && (
+                    <Badge status="cancelled">
+                      Diarsipkan
+                    </Badge>
+                  )}
                   <Badge status={apartment.availability_status}>
                     {apartment.availability_status === 'available' ? 'Tersedia' : 'Terisi'}
                   </Badge>
                 </div>
               </div>
+
+              {/* Archived Warning for Owner/Tenant */}
+              {apartment.is_archived && (
+                <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-orange-800">
+                        <strong>Unit ini sudah diarsipkan.</strong> Unit tidak tersedia untuk booking baru.
+                        {user?.role === 'owner' && ' (Anda masih bisa melihat karena Anda pemilik unit)'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Specs Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -270,7 +300,24 @@ const ApartmentDetail = () => {
                 <p className="text-gray-600">/bulan</p>
               </div>
 
-              {apartment.availability_status === 'available' ? (
+              {apartment.is_archived ? (
+                <div className="space-y-3">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                    <p className="text-gray-600 text-sm">
+                      Unit ini sudah tidak tersedia untuk booking baru
+                    </p>
+                  </div>
+                  {user?.role === 'owner' && (
+                    <Button
+                      fullWidth
+                      variant="outline"
+                      onClick={() => navigate('/owner/units')}
+                    >
+                      Kelola Unit Saya
+                    </Button>
+                  )}
+                </div>
+              ) : apartment.availability_status === 'available' ? (
                 <div className="space-y-3">
                   <Button
                     fullWidth

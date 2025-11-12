@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   HomeIcon,
   CalendarIcon,
   BanknotesIcon,
-  HeartIcon
+  HeartIcon,
+  BuildingOfficeIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import bookingsAPI from '../../api/bookings';
@@ -14,14 +16,18 @@ import StatsCard from '../../components/dashboard/StatsCard';
 import BookingCard from '../../components/booking/BookingCard';
 import BookingDetailModal from '../../components/booking/BookingDetailModal';
 import Loading from '../../components/common/Loading';
+import ApartmentCard from '../../components/apartment/ApartmentCard';
+import Badge from '../../components/common/Badge';
 
 const TenantDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     activeBookings: 0,
     pendingPayments: 0,
     favorites: 0
   });
   const [recentBookings, setRecentBookings] = useState([]);
+  const [activeBookings, setActiveBookings] = useState([]);
   const [upcomingPayments, setUpcomingPayments] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -38,7 +44,13 @@ const TenantDashboard = () => {
       const bookingsResponse = await bookingsAPI.getBookings({ per_page: 5 });
       setRecentBookings(bookingsResponse.bookings);
 
-      const activeBookings = bookingsResponse.bookings.filter(
+      // Filter active bookings with contract info
+      const activeBookingsList = bookingsResponse.bookings.filter(
+        b => b.status === 'active'
+      );
+      setActiveBookings(activeBookingsList);
+
+      const activeCount = bookingsResponse.bookings.filter(
         b => b.status === 'active' || b.status === 'confirmed'
       ).length;
 
@@ -53,7 +65,7 @@ const TenantDashboard = () => {
       const favoritesResponse = await apartmentsAPI.getFavorites();
 
       setStats({
-        activeBookings,
+        activeBookings: activeCount,
         pendingPayments: paymentsResponse.pagination?.total || 0,
         favorites: favoritesResponse.favorites?.length || 0
       });
@@ -130,6 +142,71 @@ const TenantDashboard = () => {
           <p className="text-sm text-gray-500">Lihat tagihan Anda</p>
         </Link>
       </div>
+
+      {/* Active Unit Section */}
+      {activeBookings.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center">
+              <CheckCircleIcon className="h-6 w-6 text-green-500 mr-2" />
+              Unit yang Sedang Saya Sewa
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {activeBookings.map((booking) => (
+              <div key={booking.id} className="relative">
+                <div className="absolute top-2 left-2 z-10">
+                  <Badge status="confirmed">
+                    <CheckCircleIcon className="h-4 w-4 inline mr-1" />
+                    Aktif
+                  </Badge>
+                </div>
+
+                <ApartmentCard apartment={booking.apartment} showFavorite={false} />
+
+                {/* Contract Info */}
+                <div className="mt-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-gray-600 text-xs mb-1">Kontrak Mulai</p>
+                      <p className="font-semibold text-gray-900">
+                        {booking.contract_start_date
+                          ? new Date(booking.contract_start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : new Date(booking.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600 text-xs mb-1">Kontrak Berakhir</p>
+                      <p className="font-semibold text-gray-900">
+                        {booking.contract_end_date
+                          ? new Date(booking.contract_end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : new Date(booking.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600 text-xs mb-1">Durasi</p>
+                      <p className="font-semibold text-gray-900">{booking.total_months} bulan</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600 text-xs mb-1">Kode Booking</p>
+                      <p className="font-semibold text-gray-900">{booking.booking_code}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/apartments/${booking.apartment.id}`)}
+                    className="mt-3 w-full bg-white hover:bg-gray-50 text-purple-600 font-medium py-2 px-4 rounded-lg border border-purple-200 transition-colors text-sm"
+                  >
+                    Lihat Detail Unit
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Recent Bookings */}
       <div className="bg-white rounded-lg shadow-md p-6">

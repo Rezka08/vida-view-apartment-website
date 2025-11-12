@@ -175,17 +175,17 @@ def confirm_payment(payment_id):
         payment.transaction_id = data.get('transaction_id')
         payment.payment_date = datetime.utcnow()
         payment.notes = data.get('notes', payment.notes)
-        
+
         # For admin, mark as completed directly
         if user.role == 'admin':
             payment.payment_status = 'completed'
         else:
-            # For tenant, wait for admin confirmation
-            payment.payment_status = 'pending'
-        
+            # For tenant, change status to 'verifying' (waiting for owner/admin confirmation)
+            payment.payment_status = 'verifying'
+
         db.session.commit()
-        
-        # Create notification for admin
+
+        # Create notification for admin and owner
         admin_users = User.query.filter_by(role='admin').all()
         for admin in admin_users:
             create_notification(
@@ -195,7 +195,18 @@ def confirm_payment(payment_id):
                 notification_type='payment',
                 related_id=payment.id
             )
-        
+
+        # Notify owner
+        apartment_owner = booking.apartment.owner
+        if apartment_owner:
+            create_notification(
+                user_id=apartment_owner.id,
+                title='Konfirmasi Pembayaran',
+                message=f'Pembayaran {payment.payment_code} dari {booking.tenant.full_name} menunggu konfirmasi',
+                notification_type='payment',
+                related_id=payment.id
+            )
+
         # Log activity
         log_activity(
             user_id=current_user_id,
@@ -237,13 +248,17 @@ def verify_payment(payment_id):
         
         if is_approved:
             payment.payment_status = 'completed'
-            
-            # If this is deposit payment, update booking status
+
+            # If this is deposit payment, update booking status and set contract dates
             if payment.payment_type == 'deposit':
                 booking.status = 'active'
                 # Update apartment status
                 booking.apartment.availability_status = 'occupied'
-            
+
+                # Set contract dates - contract starts from booking start_date
+                booking.contract_start_date = booking.start_date
+                booking.contract_end_date = booking.end_date
+
             # Create notification for tenant
             create_notification(
                 user_id=booking.tenant_id,

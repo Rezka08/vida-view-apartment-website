@@ -10,16 +10,12 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    type: 'studio',
-    size: '',
+    type: '1BR',
     monthly_rent: '',
     deposit: '',
     availability_status: 'available',
     description: '',
-    address: '',
     floor: '',
-    bedrooms: '0',
-    bathrooms: '1',
     furnished: true,
     facilities: [],
   });
@@ -28,12 +24,16 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
   const [photos, setPhotos] = useState([]);
 
   const apartmentTypes = [
-    { value: 'studio', label: 'Studio' },
-    { value: '1BR', label: '1 Bedroom' },
-    { value: '2BR', label: '2 Bedrooms' },
-    { value: '3BR', label: '3 Bedrooms' },
-    { value: 'penthouse', label: 'Penthouse' },
+    { value: '1BR', label: '1 Bedroom', bedrooms: 1, bathrooms: 1 },
+    { value: '2BR', label: '2 Bedroom', bedrooms: 2, bathrooms: 1 },
+    { value: '3BR', label: '3 Bedroom', bedrooms: 3, bathrooms: 2 },
   ];
+
+  // Get bedrooms and bathrooms based on selected type
+  const getUnitSpecs = (type) => {
+    const selectedType = apartmentTypes.find(t => t.value === type);
+    return selectedType || { bedrooms: 1, bathrooms: 1 };
+  };
 
   const availableFacilities = [
     'AC', 'Wi-Fi', 'TV', 'Kulkas', 'Mesin Cuci', 'Water Heater',
@@ -79,10 +79,8 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
 
     if (!formData.name.trim()) newErrors.name = 'Nama unit harus diisi';
     if (formData.name.length > 20) newErrors.name = 'Nama unit maksimal 20 karakter';
-    if (!formData.size || formData.size <= 0) newErrors.size = 'Luas harus lebih dari 0';
     if (!formData.monthly_rent || formData.monthly_rent <= 0) newErrors.monthly_rent = 'Harga sewa harus lebih dari 0';
     if (!formData.deposit || formData.deposit <= 0) newErrors.deposit = 'Deposit harus lebih dari 0';
-    if (!formData.address.trim()) newErrors.address = 'Alamat harus diisi';
     if (!formData.floor) newErrors.floor = 'Lantai harus diisi';
 
     setErrors(newErrors);
@@ -100,17 +98,19 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
+      // Get bedrooms and bathrooms based on selected type
+      const specs = getUnitSpecs(formData.type);
+
       // Step 1: Create apartment with JSON data
       const apartmentData = {
         unit_number: formData.name,
         unit_type: formData.type,
-        size_sqm: parseFloat(formData.size),
-        bedrooms: parseInt(formData.bedrooms),
-        bathrooms: parseInt(formData.bathrooms),
+        bedrooms: specs.bedrooms,
+        bathrooms: specs.bathrooms,
         floor: parseInt(formData.floor),
         price_per_month: parseFloat(formData.monthly_rent),
         deposit_amount: parseFloat(formData.deposit),
-        description: `${formData.description}\n\nAlamat: ${formData.address}`.trim(),
+        description: formData.description,
         furnished: formData.furnished,
         availability_status: formData.availability_status,
       };
@@ -147,16 +147,12 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
   const handleClose = () => {
     setFormData({
       name: '',
-      type: 'studio',
-      size: '',
+      type: '1BR',
       monthly_rent: '',
       deposit: '',
       availability_status: 'available',
       description: '',
-      address: '',
       floor: '',
-      bedrooms: '0',
-      bathrooms: '1',
       furnished: true,
       facilities: [],
     });
@@ -206,36 +202,6 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <Input
-              label="Luas (m²)"
-              name="size"
-              type="number"
-              value={formData.size}
-              onChange={handleChange}
-              error={errors.size}
-              placeholder="45"
-              required
-            />
-
-            <Input
-              label="Kamar Tidur"
-              name="bedrooms"
-              type="number"
-              value={formData.bedrooms}
-              onChange={handleChange}
-              min="0"
-            />
-
-            <Input
-              label="Kamar Mandi"
-              name="bathrooms"
-              type="number"
-              value={formData.bathrooms}
-              onChange={handleChange}
-              min="1"
-              required
-            />
-
-            <Input
               label="Lantai"
               name="floor"
               type="number"
@@ -282,23 +248,6 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
               placeholder="5000000"
               required
             />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Alamat <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                rows="2"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Jl. Sudirman No. 123, Jakarta Selatan"
-              />
-              {errors.address && (
-                <p className="mt-1 text-sm text-red-600">{errors.address}</p>
-              )}
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

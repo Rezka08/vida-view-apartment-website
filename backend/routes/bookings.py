@@ -105,7 +105,11 @@ def create_booking():
         apartment = Apartment.query.get(data['apartment_id'])
         if not apartment:
             return jsonify({'message': 'Apartment not found'}), 404
-        
+
+        # Check if apartment is archived (prevent new bookings)
+        if apartment.is_archived:
+            return jsonify({'message': 'Apartment is no longer available for booking'}), 400
+
         if apartment.availability_status != 'available':
             return jsonify({'message': 'Apartment is not available'}), 400
         

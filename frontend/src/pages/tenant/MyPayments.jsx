@@ -74,6 +74,8 @@ const MyPayments = () => {
     switch (status) {
       case 'completed':
         return <CheckCircleIcon className="h-6 w-6 text-green-500" />;
+      case 'verifying':
+        return <DocumentArrowUpIcon className="h-6 w-6 text-blue-500" />;
       case 'pending':
         return <ClockIcon className="h-6 w-6 text-yellow-500" />;
       case 'failed':
@@ -97,6 +99,7 @@ const MyPayments = () => {
   const filters = [
     { value: 'all', label: 'Semua' },
     { value: 'pending', label: 'Belum Dibayar' },
+    { value: 'verifying', label: 'Menunggu Verifikasi' },
     { value: 'completed', label: 'Lunas' },
     { value: 'failed', label: 'Gagal' }
   ];
@@ -231,6 +234,19 @@ const MyPayments = () => {
                 <div className="mb-4 p-3 bg-gray-50 rounded">
                   <p className="text-sm text-gray-600">Catatan:</p>
                   <p className="text-sm text-gray-900">{payment.notes}</p>
+                </div>
+              )}
+
+              {payment.payment_status === 'verifying' && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-900">
+                    <strong>Status:</strong> Pembayaran Anda sedang diverifikasi oleh owner/admin. Mohon tunggu konfirmasi.
+                  </p>
+                  {payment.transaction_id && (
+                    <p className="text-sm text-blue-800 mt-1">
+                      <strong>ID Transaksi:</strong> {payment.transaction_id}
+                    </p>
+                  )}
                 </div>
               )}
 

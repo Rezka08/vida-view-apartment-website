@@ -86,6 +86,8 @@ class Apartment(db.Model):
     pet_friendly = db.Column(db.Boolean, default=False)
     smoking_allowed = db.Column(db.Boolean, default=False)
     availability_status = db.Column(db.Enum('available', 'occupied'), default='available')
+    is_archived = db.Column(db.Boolean, default=False)
+    archived_at = db.Column(db.DateTime)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     total_views = db.Column(db.Integer, default=0)
     total_inquiries = db.Column(db.Integer, default=0)
@@ -120,6 +122,8 @@ class Apartment(db.Model):
             'pet_friendly': self.pet_friendly,
             'smoking_allowed': self.smoking_allowed,
             'availability_status': self.availability_status,
+            'is_archived': self.is_archived,
+            'archived_at': self.archived_at.isoformat() if self.archived_at else None,
             'owner_id': self.owner_id,
             'total_views': self.total_views,
             'avg_rating': float(self.avg_rating) if self.avg_rating else 0,
@@ -201,7 +205,7 @@ class Payment(db.Model):
     payment_type = db.Column(db.Enum('deposit', 'monthly_rent', 'penalty', 'refund', 'utility'))
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     payment_method = db.Column(db.Enum('bank_transfer', 'credit_card', 'e_wallet', 'cash'))
-    payment_status = db.Column(db.Enum('pending', 'completed', 'failed', 'refunded'), default='pending')
+    payment_status = db.Column(db.Enum('pending', 'verifying', 'completed', 'failed', 'refunded'), default='pending')
     payment_date = db.Column(db.DateTime)
     due_date = db.Column(db.Date)
     transaction_id = db.Column(db.String(100))

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Apartment, UnitPhoto, Facility, ApartmentFacility, Review, Favorite, User
+from models import db, Apartment, UnitPhoto, Facility, ApartmentFacility, Review, Favorite, User, Booking
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils import role_required, paginate_query, save_file, log_activity
 from sqlalchemy import or_, and_
@@ -8,7 +8,7 @@ apartments_bp = Blueprint('apartments', __name__, url_prefix='/api/apartments')
 
 @apartments_bp.route('', methods=['GET'])
 def get_apartments():
-    """Get all apartments with filters"""
+    """Get all apartments with filters (excludes archived for public)"""
     try:
         # Get query parameters
         page = request.args.get('page', 1, type=int)
@@ -20,29 +20,29 @@ def get_apartments():
         furnished = request.args.get('furnished', type=bool)
         status = request.args.get('status', 'available')
         search = request.args.get('search')
-        
-        # Build query
-        query = Apartment.query
-        
+
+        # Build query - EXCLUDE archived apartments for public listing
+        query = Apartment.query.filter(Apartment.is_archived == False)
+
         # Apply filters
         if unit_type:
             query = query.filter(Apartment.unit_type == unit_type)
-        
+
         if min_price:
             query = query.filter(Apartment.price_per_month >= min_price)
-        
+
         if max_price:
             query = query.filter(Apartment.price_per_month <= max_price)
-        
+
         if bedrooms:
             query = query.filter(Apartment.bedrooms == bedrooms)
-        
+
         if furnished is not None:
             query = query.filter(Apartment.furnished == furnished)
-        
+
         if status:
             query = query.filter(Apartment.availability_status == status)
-        
+
         if search:
             query = query.filter(
                 or_(
@@ -50,16 +50,16 @@ def get_apartments():
                     Apartment.description.contains(search)
                 )
             )
-        
+
         # Order by created_at desc
         query = query.order_by(Apartment.created_at.desc())
-        
+
         # Paginate
         result = paginate_query(query, page, per_page)
-        
+
         # Format response
         apartments = [apt.to_dict(include_relations=True) for apt in result['items']]
-        
+
         return jsonify({
             'apartments': apartments,
             'pagination': {
@@ -71,7 +71,7 @@ def get_apartments():
                 'has_prev': result['has_prev']
             }
         }), 200
-        
+
     except Exception as e:
         return jsonify({'message': str(e)}), 500
 
@@ -79,7 +79,7 @@ def get_apartments():
 @jwt_required()
 @role_required('owner')
 def get_my_units():
-    """Get apartments owned by current user (Owner only)"""
+    """Get apartments owned by current user including archived (Owner only)"""
     try:
         current_user_id = int(get_jwt_identity())
 
@@ -87,16 +87,21 @@ def get_my_units():
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
         status = request.args.get('status')
+        include_archived = request.args.get('include_archived', 'true')  # By default, show all including archived
 
-        # Build query - filter by owner
+        # Build query - filter by owner (INCLUDE archived units)
         query = Apartment.query.filter_by(owner_id=current_user_id)
+
+        # Optional: filter out archived if requested
+        if include_archived.lower() == 'false':
+            query = query.filter(Apartment.is_archived == False)
 
         # Apply status filter
         if status:
             query = query.filter(Apartment.availability_status == status)
 
-        # Order by created_at desc
-        query = query.order_by(Apartment.created_at.desc())
+        # Order by: non-archived first, then by created_at desc
+        query = query.order_by(Apartment.is_archived.asc(), Apartment.created_at.desc())
 
         # Paginate
         result = paginate_query(query, page, per_page)
@@ -123,26 +128,63 @@ def get_my_units():
 def get_apartment(apartment_id):
     """Get single apartment details"""
     try:
+        from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+        from models import Booking
+
         apartment = Apartment.query.get(apartment_id)
-        
+
         if not apartment:
             return jsonify({'message': 'Apartment not found'}), 404
-        
-        # Increment view count
+
+        # Check if apartment is archived
+        if apartment.is_archived:
+            # Get current user (if logged in)
+            current_user_id = None
+            try:
+                verify_jwt_in_request(optional=True)
+                jwt_identity = get_jwt_identity()
+                if jwt_identity:
+                    current_user_id = int(jwt_identity)
+            except:
+                pass
+
+            # Check access permission for archived apartment
+            has_access = False
+
+            if current_user_id:
+                # Check if user is the owner
+                if apartment.owner_id == current_user_id:
+                    has_access = True
+                else:
+                    # Check if user has active/existing booking for this apartment
+                    user_booking = Booking.query.filter(
+                        Booking.apartment_id == apartment_id,
+                        Booking.tenant_id == current_user_id,
+                        Booking.status.in_(['pending', 'confirmed', 'active', 'completed'])
+                    ).first()
+
+                    if user_booking:
+                        has_access = True
+
+            # If no access, return 404 (hide that apartment exists)
+            if not has_access:
+                return jsonify({'message': 'Apartment not found'}), 404
+
+        # Increment view count (only if not archived or has access)
         apartment.total_views += 1
         db.session.commit()
-        
+
         # Get reviews
         reviews = Review.query.filter_by(
             apartment_id=apartment_id,
             is_approved=True
         ).order_by(Review.created_at.desc()).limit(10).all()
-        
+
         data = apartment.to_dict(include_relations=True)
         data['reviews'] = [review.to_dict() for review in reviews]
-        
+
         return jsonify(data), 200
-        
+
     except Exception as e:
         return jsonify({'message': str(e)}), 500
 
@@ -289,52 +331,139 @@ def update_apartment(apartment_id):
         db.session.rollback()
         return jsonify({'message': str(e)}), 500
 
+@apartments_bp.route('/<int:apartment_id>/has-bookings', methods=['GET'])
+@jwt_required()
+@role_required('owner', 'admin')
+def check_apartment_bookings(apartment_id):
+    """Check if apartment has any bookings"""
+    try:
+        current_user_id = int(get_jwt_identity())
+        user = User.query.get(current_user_id)
+
+        apartment = Apartment.query.get(apartment_id)
+
+        if not apartment:
+            return jsonify({'message': 'Apartment not found'}), 404
+
+        # Check ownership (unless admin)
+        if user.role == 'owner' and apartment.owner_id != current_user_id:
+            return jsonify({'message': 'Unauthorized'}), 403
+
+        # Check if apartment has any bookings (excluding cancelled/rejected)
+        bookings = Booking.query.filter(
+            Booking.apartment_id == apartment_id,
+            Booking.status.in_(['pending', 'confirmed', 'active', 'completed'])
+        ).all()
+
+        has_bookings = len(bookings) > 0
+
+        return jsonify({
+            'has_bookings': has_bookings,
+            'booking_count': len(bookings)
+        }), 200
+
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
+
 @apartments_bp.route('/<int:apartment_id>', methods=['DELETE'])
 @jwt_required()
 @role_required('owner', 'admin')
 def delete_apartment(apartment_id):
-    """Delete apartment (Owner/Admin only)"""
+    """Delete or Archive apartment - Owner/Admin only
+
+    Query params:
+    - action: 'delete' for hard delete (only if no bookings), 'archive' for soft delete
+    """
     try:
+        from datetime import datetime
+        from flask import request
         current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
-        
+
         apartment = Apartment.query.get(apartment_id)
-        
+
         if not apartment:
             return jsonify({'message': 'Apartment not found'}), 404
-        
+
         # Check ownership (unless admin)
         if user.role == 'owner' and apartment.owner_id != current_user_id:
-            return jsonify({'message': 'You can only delete your own apartments'}), 403
-        
-        # Check if apartment has active bookings
-        from models import Booking
-        active_bookings = Booking.query.filter(
+            return jsonify({'message': 'You can only delete/archive your own apartments'}), 403
+
+        # Get action parameter (default to 'archive' for backward compatibility)
+        action = request.args.get('action', 'archive')
+
+        # Check if apartment has bookings
+        bookings = Booking.query.filter(
             Booking.apartment_id == apartment_id,
-            Booking.status.in_(['confirmed', 'active'])
-        ).first()
-        
-        if active_bookings:
-            return jsonify({'message': 'Cannot delete apartment with active bookings'}), 400
-        
-        old_data = apartment.to_dict()
-        
-        db.session.delete(apartment)
-        db.session.commit()
-        
-        # Log activity
-        log_activity(
-            user_id=current_user_id,
-            action='delete',
-            entity_type='apartment',
-            entity_id=apartment_id,
-            old_data=old_data
-        )
-        
-        return jsonify({
-            'message': 'Apartment deleted successfully'
-        }), 200
-        
+            Booking.status.in_(['pending', 'confirmed', 'active', 'completed'])
+        ).all()
+
+        has_bookings = len(bookings) > 0
+
+        if action == 'delete':
+            # Hard delete - only allowed if no bookings
+            if has_bookings:
+                return jsonify({
+                    'message': 'Tidak dapat menghapus unit yang sudah memiliki booking. Gunakan fitur Arsip sebagai gantinya.',
+                    'has_bookings': True
+                }), 400
+
+            old_data = apartment.to_dict()
+
+            # Delete associated photos first
+            UnitPhoto.query.filter_by(apartment_id=apartment_id).delete()
+
+            # Delete associated facilities
+            ApartmentFacility.query.filter_by(apartment_id=apartment_id).delete()
+
+            # Hard delete the apartment
+            db.session.delete(apartment)
+            db.session.commit()
+
+            # Log activity
+            log_activity(
+                user_id=current_user_id,
+                action='delete',
+                entity_type='apartment',
+                entity_id=apartment_id,
+                old_data=old_data,
+                new_data=None
+            )
+
+            return jsonify({
+                'message': 'Apartemen berhasil dihapus permanen.',
+                'deleted': True
+            }), 200
+
+        else:  # action == 'archive'
+            # Soft delete: mark as archived
+            if apartment.is_archived:
+                return jsonify({'message': 'Apartemen sudah diarsipkan sebelumnya'}), 400
+
+            old_data = apartment.to_dict()
+
+            apartment.is_archived = True
+            apartment.archived_at = datetime.utcnow()
+
+            db.session.commit()
+
+            # Log activity
+            log_activity(
+                user_id=current_user_id,
+                action='archive',
+                entity_type='apartment',
+                entity_id=apartment_id,
+                old_data=old_data,
+                new_data=apartment.to_dict()
+            )
+
+            return jsonify({
+                'message': 'Apartemen berhasil diarsipkan. Penyewa yang sudah booking masih bisa akses.',
+                'apartment': apartment.to_dict(),
+                'archived': True
+            }), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': str(e)}), 500

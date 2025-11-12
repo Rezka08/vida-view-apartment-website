@@ -28,6 +28,7 @@ export const getStatusText = (status, type = 'booking') => {
     },
     payment: {
       pending: 'Menunggu Pembayaran',
+      verifying: 'Menunggu Verifikasi',
       completed: 'Lunas',
       failed: 'Gagal',
       refunded: 'Dikembalikan'

@@ -108,22 +108,22 @@ const Home = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <img
-                src="/images/apartment-1.jpg"
+                src="https://vidaviewmakassar.com/wp-content/uploads/2025/02/Vidaview_Apartment_Floor_7_Outdoor_Park_and_Pool_19-resize-768x576.jpg"
                 alt="Apartment"
                 className="rounded-lg shadow-lg object-cover h-48"
               />
               <img
-                src="/images/apartment-2.jpg"
+                src="https://vidaviewmakassar.com/wp-content/uploads/2025/02/Vidaview-Apartment_Floor-7_Outdoor-Park-and-Pool_16-768x576.jpg"
                 alt="Apartment"
                 className="rounded-lg shadow-lg object-cover h-48 mt-8"
               />
               <img
-                src="/images/apartment-3.jpg"
+                src="https://images.trvl-media.com/lodging/102000000/101560000/101552100/101552011/baaf3a9d.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill"
                 alt="Apartment"
                 className="rounded-lg shadow-lg object-cover h-48"
               />
               <img
-                src="/images/apartment-4.jpg"
+                src="https://vidaviewmakassar.com/wp-content/uploads/elementor/thumbs/Vidaview_Ruko-r7tiffo2kggqf60z3v81r2x8kso0p4u9icum2w3b74.webp"
                 alt="Apartment"
                 className="rounded-lg shadow-lg object-cover h-48 mt-8"
               />

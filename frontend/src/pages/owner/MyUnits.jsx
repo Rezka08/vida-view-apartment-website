@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, EyeIcon, BuildingOfficeIcon, ArchiveBoxIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import apartmentsAPI from '../../api/apartments';
 import ApartmentCard from '../../components/apartment/ApartmentCard';
+import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Pagination from '../../components/common/Pagination';
 import Loading from '../../components/common/Loading';
 import AddUnitModal from '../../components/owner/AddUnitModal';
+import axios from '../../api/axios';
 
 const MyUnits = () => {
   const navigate = useNavigate();
@@ -20,6 +22,9 @@ const MyUnits = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [actionType, setActionType] = useState('archive'); // 'delete' or 'archive'
+  const [hasBookings, setHasBookings] = useState(false);
+  const [checkingBookings, setCheckingBookings] = useState(false);
 
   useEffect(() => {
     fetchApartments();
@@ -43,15 +48,58 @@ const MyUnits = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const checkApartmentBookings = async (apartmentId) => {
+    setCheckingBookings(true);
+    try {
+      const response = await axios.get(`/apartments/${apartmentId}/has-bookings`);
+      return response.data.has_bookings;
+    } catch (error) {
+      console.error('Error checking bookings:', error);
+      return false;
+    } finally {
+      setCheckingBookings(false);
+    }
+  };
+
+  const handleDeleteClick = async (apartment) => {
+    setSelectedApartment(apartment);
+    const hasBooking = await checkApartmentBookings(apartment.id);
+    setHasBookings(hasBooking);
+
+    // If has bookings, force archive mode
+    if (hasBooking) {
+      setActionType('archive');
+    } else {
+      // If no bookings, allow delete
+      setActionType('delete');
+    }
+
+    setShowDeleteModal(true);
+  };
+
+  const handleArchiveClick = (apartment) => {
+    setSelectedApartment(apartment);
+    setActionType('archive');
+    setHasBookings(false);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmAction = async () => {
     setDeleting(true);
     try {
-      await apartmentsAPI.deleteApartment(selectedApartment.id);
-      toast.success('Unit berhasil dihapus');
+      const action = actionType === 'delete' ? 'delete' : 'archive';
+      await axios.delete(`/apartments/${selectedApartment.id}?action=${action}`);
+
+      if (actionType === 'delete') {
+        toast.success('Unit berhasil dihapus permanen.');
+      } else {
+        toast.success('Unit berhasil diarsipkan. Penyewa yang sudah booking masih bisa akses.');
+      }
+
       setShowDeleteModal(false);
       fetchApartments();
     } catch (error) {
-      toast.error('Gagal menghapus unit');
+      toast.error(error.response?.data?.message || `Gagal ${actionType === 'delete' ? 'menghapus' : 'mengarsipkan'} unit`);
     } finally {
       setDeleting(false);
     }
@@ -94,29 +142,50 @@ const MyUnits = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {apartments.map((apartment) => (
               <div key={apartment.id} className="relative">
-                <ApartmentCard apartment={apartment} showFavorite={false} />
+                {apartment.is_archived && (
+                  <div className="absolute top-2 left-2 z-10">
+                    <Badge status="cancelled">
+                      <ArchiveBoxIcon className="h-4 w-4 inline mr-1" />
+                      Diarsipkan
+                    </Badge>
+                  </div>
+                )}
+                <div className={apartment.is_archived ? 'opacity-75' : ''}>
+                  <ApartmentCard apartment={apartment} showFavorite={false} />
+                </div>
                 <div className="absolute top-4 right-4 flex space-x-2">
                   <button
                     onClick={() => navigate(`/apartments/${apartment.id}`)}
                     className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                    title="Lihat Detail"
                   >
                     <EyeIcon className="h-5 w-5 text-purple-600" />
                   </button>
-                  <button
-                    onClick={() => toast('Fitur edit akan segera tersedia', { icon: 'ℹ️' })}
-                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                  >
-                    <PencilIcon className="h-5 w-5 text-blue-600" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedApartment(apartment);
-                      setShowDeleteModal(true);
-                    }}
-                    className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
-                  >
-                    <TrashIcon className="h-5 w-5 text-red-600" />
-                  </button>
+                  {!apartment.is_archived && (
+                    <>
+                      <button
+                        onClick={() => toast('Fitur edit akan segera tersedia', { icon: 'ℹ️' })}
+                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                        title="Edit"
+                      >
+                        <PencilIcon className="h-5 w-5 text-blue-600" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(apartment)}
+                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                        title="Hapus Unit"
+                      >
+                        <TrashIcon className="h-5 w-5 text-red-600" />
+                      </button>
+                      <button
+                        onClick={() => handleArchiveClick(apartment)}
+                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
+                        title="Arsipkan"
+                      >
+                        <ArchiveBoxIcon className="h-5 w-5 text-orange-600" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -142,18 +211,82 @@ const MyUnits = () => {
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        title="Hapus Unit"
+        title={actionType === 'delete' ? 'Hapus Unit' : 'Arsipkan Unit'}
       >
-        <p className="mb-4">
-          Apakah Anda yakin ingin menghapus unit <strong>{selectedApartment?.unit_number}</strong>?
-        </p>
+        <div className="mb-4">
+          {actionType === 'delete' ? (
+            <>
+              <p className="mb-2">
+                Apakah Anda yakin ingin menghapus unit <strong>{selectedApartment?.unit_number}</strong>?
+              </p>
+              {hasBookings ? (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
+                  <p className="text-red-900">
+                    <strong>Tidak dapat menghapus!</strong> Unit ini sudah memiliki booking aktif.
+                  </p>
+                  <p className="text-red-800 mt-2">
+                    Gunakan fitur <strong>Arsip</strong> sebagai gantinya untuk menyembunyikan unit dari calon penyewa baru.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
+                  <p className="text-red-900">
+                    <strong>Peringatan:</strong> Unit akan dihapus permanen!
+                  </p>
+                  <ul className="list-disc ml-5 mt-1 text-red-800">
+                    <li>Data unit akan dihapus dari database</li>
+                    <li>Semua foto dan informasi unit akan hilang</li>
+                    <li>Aksi ini tidak dapat dibatalkan</li>
+                  </ul>
+                  <p className="mt-2 text-red-900">
+                    <strong>Catatan:</strong> Hapus permanen hanya bisa dilakukan jika unit belum pernah memiliki booking.
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="mb-2">
+                Apakah Anda yakin ingin mengarsipkan unit <strong>{selectedApartment?.unit_number}</strong>?
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                <p className="text-blue-900">
+                  <strong>Catatan:</strong> Unit yang diarsipkan:
+                </p>
+                <ul className="list-disc ml-5 mt-1 text-blue-800">
+                  <li>Tidak akan muncul untuk calon penyewa baru</li>
+                  <li>Tetap bisa diakses oleh penyewa yang sudah booking</li>
+                  <li>Masih bisa Anda lihat di halaman ini dengan badge "Diarsipkan"</li>
+                </ul>
+              </div>
+            </>
+          )}
+        </div>
         <div className="flex space-x-3">
           <Button variant="secondary" onClick={() => setShowDeleteModal(false)} fullWidth>
             Batal
           </Button>
-          <Button variant="danger" onClick={handleDelete} loading={deleting} fullWidth>
-            Hapus
-          </Button>
+          {actionType === 'delete' && hasBookings ? (
+            <Button
+              variant="warning"
+              onClick={() => {
+                setShowDeleteModal(false);
+                setTimeout(() => handleArchiveClick(selectedApartment), 100);
+              }}
+              fullWidth
+            >
+              Arsipkan Saja
+            </Button>
+          ) : (
+            <Button
+              variant="danger"
+              onClick={handleConfirmAction}
+              loading={deleting || checkingBookings}
+              fullWidth
+            >
+              {actionType === 'delete' ? 'Ya, Hapus Permanen' : 'Ya, Arsipkan'}
+            </Button>
+          )}
         </div>
       </Modal>
 

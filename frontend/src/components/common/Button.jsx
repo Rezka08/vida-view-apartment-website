@@ -20,6 +20,7 @@ const Button = ({
     secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-500 disabled:bg-gray-100',
     outline: 'border-2 border-purple-600 text-purple-600 hover:bg-purple-50 focus:ring-purple-500 disabled:border-purple-300 disabled:text-purple-300',
     danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 disabled:bg-red-300',
+    warning: 'bg-orange-600 hover:bg-orange-700 text-white focus:ring-orange-500 disabled:bg-orange-300',
     ghost: 'text-purple-600 hover:bg-purple-50 focus:ring-purple-500',
     link: 'text-purple-600 hover:text-purple-700 underline focus:ring-purple-500'
   };

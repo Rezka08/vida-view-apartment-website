@@ -153,7 +153,7 @@ const Location = () => {
                 <MapPinIcon className="h-20 w-20 text-purple-600 mx-auto mb-4" />
                 <p className="text-gray-700 font-semibold text-lg mb-2">Vida View Apartment</p>
                 <p className="text-gray-600 text-sm">
-                  Jl. M.H. Thamrin No. 123, Jakarta Pusat 10350
+                  Jl. Topaz Raya unit 16C, Masale, Kec. Panakkukang, Kota Makassar, Sulawesi Selatan 90215
                 </p>
               </div>
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3">
