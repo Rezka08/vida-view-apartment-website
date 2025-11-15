@@ -11,6 +11,9 @@ import Button from '../components/common/Button';
 const Home = () => {
   const navigate = useNavigate();
 
+  // Menggunakan URL gambar yang diberikan oleh pengguna
+  const imageUrl = 'https://cdn.travelio.id/building/4d55d-5aebe4d59a356f25a4e88690/vida-view-makassar_l.jpg';
+
   const features = [
     {
       name: '24/7 High Speed',
@@ -55,15 +58,18 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-[600px] bg-gradient-to-r from-purple-900 via-purple-700 to-indigo-900">
-        <div className="absolute inset-0 bg-black opacity-40"></div>
+      <section 
+        className="relative h-[600px] bg-cover bg-center"
+        style={{ backgroundImage: `url(${imageUrl})` }}
+      >
+        <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
           <div className="text-center w-full">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
               VIDAVIEW APARTMENTS
             </h1>
             <p className="text-xl md:text-2xl text-gray-200 mb-8">
-              Lifestyle in vibrant atmosphere
+              Lifestyle in Vibrant Atmosphere
             </p>
             <div className="max-w-xl mx-auto">
               <div className="flex">
@@ -188,7 +194,7 @@ const Home = () => {
                 </div>
               </div>
             </div>
-            <div className="h-96 bg-gray-200 rounded-lg overflow-hidden">
+            <div className="h-96 bg-gray-200 rounded-lg overflow-hidden shadow-lg">
               {/* Map placeholder */}
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d1299.4816185353466!2d119.44139523808344!3d-5.15502298300159!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1svida%20view!5e1!3m2!1sid!2sid!4v1762091008318!5m2!1sid!2sid"
@@ -198,7 +204,24 @@ const Home = () => {
                 allowFullScreen=""
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
+                title="Google Maps Vida View Apartment"
               ></iframe>
+            </div>
+            <div className="mt-4 flex gap-3 justify-center lg:justify-start">
+              <Button 
+                onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=Vida+View+Apartment+Makassar&query_place_id=ChIJddbYSERe-i0RS0o3TjF6T2s', '_blank')}
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                Buka di Google Maps
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=-5.15502298300159,119.44139523808344', '_blank')}
+              >
+                Dapatkan Arah
+              </Button>
             </div>
           </div>
         </div>
