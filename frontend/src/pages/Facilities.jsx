@@ -1,15 +1,4 @@
 import React, { useState } from 'react';
-import {
-  WifiIcon,
-  TvIcon,
-  HomeModernIcon,
-  FireIcon,
-  UserGroupIcon,
-  ShieldCheckIcon,
-  SparklesIcon,
-  TruckIcon,
-  SwatchIcon
-} from '@heroicons/react/24/outline';
 import Button from '../components/common/Button';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,7 +21,7 @@ const Facilities = () => {
 
   const facilities = [
     {
-      icon: HomeModernIcon,
+      imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=600&fit=crop',
       title: 'Fitness Center',
       category: 'olahraga',
       badge: 'Olahraga & Fitness',
@@ -47,7 +36,7 @@ const Facilities = () => {
       color: 'purple'
     },
     {
-      icon: FireIcon,
+      imageUrl: 'https://i.pinimg.com/1200x/c7/32/14/c73214c6cb0c3236376fc0fcb4cd2801.jpg',
       title: 'Swimming Pool',
       category: 'olahraga',
       badge: 'Olahraga & Fitness',
@@ -62,7 +51,7 @@ const Facilities = () => {
       color: 'cyan'
     },
     {
-      icon: TruckIcon,
+      imageUrl: 'https://i.pinimg.com/1200x/d7/fe/57/d7fe57af4ff2b78fb42550a84aba3d8e.jpg',
       title: 'Shopping Arcade',
       category: 'komunitas',
       badge: 'Komunitas',
@@ -77,7 +66,7 @@ const Facilities = () => {
       color: 'green'
     },
     {
-      icon: TruckIcon,
+      imageUrl: 'https://i.pinimg.com/1200x/e9/33/57/e933578a19dba0ab2236a699ce6d1c38.jpg',
       title: 'Parking Area',
       category: 'keamanan',
       badge: 'Keamanan',
@@ -92,7 +81,7 @@ const Facilities = () => {
       color: 'gray'
     },
     {
-      icon: ShieldCheckIcon,
+      imageUrl: 'https://i.pinimg.com/1200x/31/c5/6c/31c56c2c7baaa5c40216d70e9a6a86cd.jpg',
       title: '24/7 Security',
       category: 'keamanan',
       badge: 'Keamanan',
@@ -107,7 +96,7 @@ const Facilities = () => {
       color: 'red'
     },
     {
-      icon: WifiIcon,
+      imageUrl: 'https://i.pinimg.com/736x/2f/fc/e6/2ffce627954199c172bd5947d589da92.jpg',
       title: 'High-Speed Internet',
       category: 'teknologi',
       badge: 'Teknologi',
@@ -122,7 +111,7 @@ const Facilities = () => {
       color: 'indigo'
     },
     {
-      icon: UserGroupIcon,
+      imageUrl: 'https://i.pinimg.com/736x/60/bd/39/60bd394c51249e65e1b1616e1a88ff79.jpg',
       title: 'Function Hall',
       category: 'sosial',
       badge: 'Komunitas',
@@ -137,7 +126,7 @@ const Facilities = () => {
       color: 'yellow'
     },
     {
-      icon: SparklesIcon,
+      imageUrl: 'https://vidaviewmakassar.com/wp-content/uploads/2025/02/Vidaview-Apartment_Floor-7_Outdoor-Park-and-Pool_16-768x576.jpg',
       title: 'Sky Garden',
       category: 'rekreasi',
       badge: 'Rekreasi',
@@ -152,7 +141,7 @@ const Facilities = () => {
       color: 'green'
     },
     {
-      icon: SwatchIcon,
+      imageUrl: 'https://i.pinimg.com/1200x/23/b6/56/23b65673022ec402a3c086990ca3895d.jpg',
       title: 'Food Court',
       category: 'sosial',
       badge: 'Komunitas',
@@ -167,7 +156,7 @@ const Facilities = () => {
       color: 'orange'
     },
     {
-      icon: UserGroupIcon,
+      imageUrl: 'https://i.pinimg.com/736x/b1/15/f0/b115f092d16588bc949a447196a72a41.jpg',
       title: "Children's Playground",
       category: 'rekreasi',
       badge: 'Rekreasi',
@@ -182,7 +171,7 @@ const Facilities = () => {
       color: 'pink'
     },
     {
-      icon: FireIcon,
+      imageUrl: 'https://i.pinimg.com/736x/ee/d7/a5/eed7a53783f1fa0305ef775d241f35cc.jpg',
       title: 'Cafe & Lounge',
       category: 'cafe',
       badge: 'Cafe & Lounge',
@@ -197,7 +186,7 @@ const Facilities = () => {
       color: 'purple'
     },
     {
-      icon: SparklesIcon,
+      imageUrl: 'https://i.pinimg.com/1200x/1d/2c/8d/1d2c8d96663d3c39bd9e14c961865bff.jpg',
       title: 'Indomaret 24/7',
       category: 'Minimarket',
       badge: 'Minimarket',
@@ -257,17 +246,23 @@ const Facilities = () => {
         {/* Facilities Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {filteredFacilities.map((facility, index) => {
-            const Icon = facility.icon;
             return (
               <div key={index} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-                {/* Card Header with Icon */}
-                <div className="relative h-48 bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center">
-                  <div className="absolute top-4 right-4">
+                {/* Card Header with Image */}
+                <div className="relative h-48 bg-gray-100 overflow-hidden">
+                  <div className="absolute top-4 right-4 z-10">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${facility.badgeColor}`}>
                       {facility.badge}
                     </span>
                   </div>
-                  <Icon className="h-24 w-24 text-purple-400" />
+                  <img 
+                    src={facility.imageUrl} 
+                    alt={facility.title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(facility.title);
+                    }}
+                  />
                 </div>
 
                 {/* Card Content */}
