@@ -12,7 +12,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   // Menggunakan URL gambar yang diberikan oleh pengguna
-  const imageUrl = 'https://cdn.travelio.id/building/4d55d-5aebe4d59a356f25a4e88690/vida-view-makassar_l.jpg';
+  const imageUrl ='/img/vida_view.jpg';
 
   const features = [
     {
@@ -193,6 +193,22 @@ const Home = () => {
                   </div>
                 </div>
               </div>
+              <div className="mt-6 flex gap-3">
+                <Button 
+                  onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=-5.15502298300159,119.44139523808344', '_blank')}
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  Buka di Google Maps
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=-5.15502298300159,119.44139523808344', '_blank')}
+                >
+                  Dapatkan Arah
+                </Button>
+              </div>
             </div>
             <div className="h-96 bg-gray-200 rounded-lg overflow-hidden shadow-lg">
               {/* Map placeholder */}
@@ -206,22 +222,6 @@ const Home = () => {
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Google Maps Vida View Apartment"
               ></iframe>
-            </div>
-            <div className="mt-4 flex gap-3 justify-center lg:justify-start">
-              <Button 
-                onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=Vida+View+Apartment+Makassar&query_place_id=ChIJddbYSERe-i0RS0o3TjF6T2s', '_blank')}
-                size="sm"
-                className="bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                Buka di Google Maps
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=-5.15502298300159,119.44139523808344', '_blank')}
-              >
-                Dapatkan Arah
-              </Button>
             </div>
           </div>
         </div>
