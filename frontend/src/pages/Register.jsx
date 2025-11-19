@@ -6,7 +6,9 @@ import {
   UserIcon,
   PhoneIcon,
   MapPinIcon,
-  CalendarIcon
+  CalendarIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../stores/authStore';
 import Input from '../components/common/Input';
@@ -28,6 +30,8 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const navigate = useNavigate();
   const register = useAuthStore(state => state.register);
@@ -184,29 +188,55 @@ const Register = () => {
               required
             />
 
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-              placeholder="Minimal 6 karakter"
-              icon={<LockClosedIcon className="h-5 w-5" />}
-              required
-            />
+            <div className="relative">
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+                placeholder="Minimal 6 karakter"
+                icon={<LockClosedIcon className="h-5 w-5" />}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
 
-            <Input
-              label="Konfirmasi Password"
-              name="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              error={errors.confirmPassword}
-              placeholder="Ulangi password"
-              icon={<LockClosedIcon className="h-5 w-5" />}
-              required
-            />
+            <div className="relative">
+              <Input
+                label="Konfirmasi Password"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                error={errors.confirmPassword}
+                placeholder="Ulangi password"
+                icon={<LockClosedIcon className="h-5 w-5" />}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+              >
+                {showConfirmPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Optional Fields */}

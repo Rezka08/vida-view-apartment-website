@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { EnvelopeIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../stores/authStore';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
@@ -14,6 +14,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const login = useAuthStore(state => state.login);
@@ -109,17 +110,30 @@ const Login = () => {
               required
             />
 
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-              placeholder="Masukkan password"
-              icon={<LockClosedIcon className="h-5 w-5" />}
-              required
-            />
+            <div className="relative">
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+                placeholder="Masukkan password"
+                icon={<LockClosedIcon className="h-5 w-5" />}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
