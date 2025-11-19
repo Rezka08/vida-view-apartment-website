@@ -12,10 +12,10 @@ const Facilities = () => {
     { id: 'keamanan', label: 'Keamanan' },
     { id: 'komunitas', label: 'Komunitas' },
     { id: 'rekreasi', label: 'Rekreasi' },
-    { id: 'wellness', label: 'Wellness' },
+    // { id: 'wellness', label: 'Wellness' },
     { id: 'teknologi', label: 'Teknologi' },
     { id: 'sosial', label: 'Sosial' },
-    { id: 'minimarket', label: 'Minimarket' },
+    { id: 'Minimarket', label: 'Minimarket' },
     { id: 'cafe', label: 'Cafe & Lounge' }
   ];
 
