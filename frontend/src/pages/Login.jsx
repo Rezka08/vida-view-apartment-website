@@ -76,9 +76,11 @@ const Login = () => {
         {/* Header */}
         <div>
           <div className="flex justify-center">
-            <div className="w-16 h-16 bg-purple-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">VV</span>
-            </div>
+            <img 
+              src="/img/logo.png" 
+                alt="Vida View Logo" 
+                className="h-40 w-auto"
+            />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
             Masuk ke Vida View

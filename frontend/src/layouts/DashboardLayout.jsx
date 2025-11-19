@@ -94,10 +94,11 @@ const DashboardLayout = () => {
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">VV</span>
-              </div>
-              <span className="text-lg font-bold text-gray-900">Vida View</span>
+              <img 
+                src="/img/logo.png" 
+                alt="Vida View Logo" 
+                className="h-28 w-auto"
+              />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
