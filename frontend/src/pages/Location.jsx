@@ -178,7 +178,7 @@ const Location = () => {
               <div className="flex gap-3 justify-center">
                 {/* Tombol yang lebih interaktif */}
                 <Button 
-                  onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=Vida+View+Apartment+Makassar&query_place_id=ChIJddbYSERe-i0RS0o3TjF6T2s', '_blank')}
+                  onClick={() => window.open('https://www.google.com/maps/search/?api=1&query=-5.15502298300159,119.44139523808344', '_blank')}
                   size="sm"
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >

@@ -99,11 +99,11 @@ const Home = () => {
                 Tentang Vida View
               </h2>
               <p className="text-gray-600 mb-4">
-                VidaView Apartment merupakan pencakar unit residensial dan komersial yang membangun 3 tower dengan total 1,800 unit tipe unit apartemen disesuaikan dalam 1 tipe luas, total area bangunan menghabiskan seukuran 4 toko luas lahan dan menjual apartemen dilokasikan dekat 13 lot (food corner, GNC, BMC, dan 24 corner) dan meja dinas ke area komune untuk melakukan kegiatan-kegiatan umum untuk menopang kegiatan sertifikasinya project agamis dan lora, tenang menjadi.
+                VidaView Apartment merupakan pencakar unit residensial dan komersial yang membangun 2 tower dengan total 1,800 unit tipe unit apartemen disesuaikan dalam 1 tipe luas, total area bangunan menghabiskan seukuran 4 toko luas lahan dan menjual apartemen dilokasikan dekat 13 lot (food corner, GNC, BMC, dan 24 corner) dan meja dinas ke area komune untuk melakukan kegiatan-kegiatan umum untuk menopang kegiatan sertifikasinya project agamis dan lora, tenang menjadi.
               </p>
               <div className="grid grid-cols-2 gap-4 mt-6">
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-3xl font-bold text-purple-600">3</div>
+                  <div className="text-3xl font-bold text-purple-600">2</div>
                   <div className="text-sm text-gray-600">Tower</div>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
