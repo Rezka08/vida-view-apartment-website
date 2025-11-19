@@ -1,20 +1,25 @@
 import React from 'react';
+import { TagIcon } from '@heroicons/react/24/outline';
 import { formatCurrency } from '../../utils/formatters';
 
-const BookingSummary = ({ 
-  apartment, 
-  startDate, 
-  endDate, 
-  totalMonths, 
+const BookingSummary = ({
+  apartment,
+  startDate,
+  endDate,
+  totalMonths,
   monthlyRent,
   deposit,
   utilityDeposit,
-  adminFee 
+  adminFee,
+  discount = 0,
+  appliedPromo = null,
+  total
 }) => {
-  const total = (monthlyRent * totalMonths) + deposit + utilityDeposit + adminFee;
+  const subtotal = (monthlyRent * totalMonths) + deposit + utilityDeposit + adminFee;
+  const finalTotal = total || subtotal;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
       <h3 className="text-lg font-semibold mb-4">Ringkasan Booking</h3>
       
       {apartment && (
@@ -56,12 +61,39 @@ const BookingSummary = ({
           <span className="text-gray-600">Biaya Admin</span>
           <span className="font-medium">{formatCurrency(adminFee)}</span>
         </div>
+
+        {discount > 0 && appliedPromo && (
+          <>
+            <div className="flex justify-between pt-2 border-t">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-medium">{formatCurrency(subtotal)}</span>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-center mb-2">
+                <TagIcon className="h-4 w-4 text-green-600 mr-1" />
+                <span className="text-xs font-semibold text-green-900">PROMO: {appliedPromo.code}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-green-700">Diskon</span>
+                <span className="font-bold text-green-600">-{formatCurrency(discount)}</span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex justify-between text-lg font-bold">
         <span>Total Pembayaran</span>
-        <span className="text-purple-600">{formatCurrency(total)}</span>
+        <span className="text-purple-600">{formatCurrency(finalTotal)}</span>
       </div>
+
+      {discount > 0 && (
+        <div className="mt-2 text-center">
+          <p className="text-sm text-green-600 font-medium">
+            Anda hemat {formatCurrency(discount)}!
+          </p>
+        </div>
+      )}
     </div>
   );
 };

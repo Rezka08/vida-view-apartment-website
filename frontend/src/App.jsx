@@ -139,6 +139,11 @@ function App() {
             <FinancialReport />
           </RoleRoute>
         } />
+        <Route path="/owner/payments" element={
+          <RoleRoute allowedRoles={['owner']}>
+            <PaymentVerification />
+          </RoleRoute>
+        } />
         <Route path="/profile" element={
           <RoleRoute allowedRoles={['tenant', 'owner', 'admin']}>
             <TenantProfile />

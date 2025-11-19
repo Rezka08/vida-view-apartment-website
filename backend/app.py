@@ -30,7 +30,8 @@ def create_app(config_name='development'):
     from routes.facilities import facilities_bp
     from routes.notifications import notifications_bp
     from routes.admin import admin_bp
-    
+    from routes.promotions import promotions_bp
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(apartments_bp)
     app.register_blueprint(bookings_bp)
@@ -40,6 +41,7 @@ def create_app(config_name='development'):
     app.register_blueprint(facilities_bp)
     app.register_blueprint(notifications_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(promotions_bp)
     
     # Serve uploaded files
     @app.route('/uploads/<path:filename>')

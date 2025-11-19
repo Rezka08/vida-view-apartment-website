@@ -36,9 +36,9 @@ def get_payments():
         
         # Paginate
         payments = query.paginate(page=page, per_page=per_page, error_out=False)
-        
+
         return jsonify({
-            'payments': [payment.to_dict() for payment in payments.items],
+            'payments': [payment.to_dict(include_relations=True) for payment in payments.items],
             'pagination': {
                 'page': payments.page,
                 'per_page': payments.per_page,

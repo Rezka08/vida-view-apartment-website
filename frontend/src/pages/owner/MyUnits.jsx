@@ -10,6 +10,7 @@ import Modal from '../../components/common/Modal';
 import Pagination from '../../components/common/Pagination';
 import Loading from '../../components/common/Loading';
 import AddUnitModal from '../../components/owner/AddUnitModal';
+import EditUnitModal from '../../components/owner/EditUnitModal';
 import axios from '../../api/axios';
 
 const MyUnits = () => {
@@ -21,6 +22,8 @@ const MyUnits = () => {
     const [selectedApartment, setSelectedApartment] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingApartment, setEditingApartment] = useState(null);
     const [deleting, setDeleting] = useState(false);
   const [actionType, setActionType] = useState('archive'); // 'delete' or 'archive'
     const [hasBookings, setHasBookings] = useState(false);
@@ -109,6 +112,15 @@ const MyUnits = () => {
     fetchApartments(); // Refresh list after adding
     };
 
+    const handleEditClick = (apartment) => {
+        setEditingApartment(apartment);
+        setShowEditModal(true);
+    };
+
+    const handleEditSuccess = () => {
+        fetchApartments(); // Refresh list after editing
+    };
+
     if (loading && apartments.length === 0) return <Loading fullScreen text="Memuat unit..." />;
 
     return (
@@ -164,7 +176,7 @@ const MyUnits = () => {
                     {!apartment.is_archived && (
                     <>
                         <button
-                        onClick={() => toast('Fitur edit akan segera tersedia', { icon: 'ℹ' })}
+                        onClick={() => handleEditClick(apartment)}
                         className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50"
                         title="Edit"
                         >
@@ -294,6 +306,13 @@ const MyUnits = () => {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSuccess={handleAddSuccess}
+        />
+
+        <EditUnitModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSuccess={handleEditSuccess}
+        apartment={editingApartment}
         />
     </div>
     );

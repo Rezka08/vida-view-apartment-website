@@ -49,6 +49,7 @@ const DashboardLayout = () => {
       owner: [
         { name: 'Kelola Unit', href: '/owner/units', icon: BuildingOfficeIcon },
         { name: 'Booking', href: '/owner/bookings', icon: CalendarIcon },
+        { name: 'Verifikasi Pembayaran', href: '/owner/payments', icon: CreditCardIcon },
         { name: 'Laporan Keuangan', href: '/owner/financial', icon: ChartBarIcon },
       ],
       tenant: [

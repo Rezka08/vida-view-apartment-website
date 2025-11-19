@@ -1,32 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { 
-  BanknotesIcon, 
+import {
+  BanknotesIcon,
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
-  DocumentArrowUpIcon
+  DocumentArrowUpIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline';
 import paymentsAPI from '../../api/payment';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
 import Loading from '../../components/common/Loading';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { getStatusText } from '../../utils/helpers';
+import { generateInvoicePDF } from '../../utils/invoiceGenerator';
 
 const MyPayments = () => {
+  const navigate = useNavigate();
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
-  const [selectedPayment, setSelectedPayment] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentData, setPaymentData] = useState({
-    payment_method: 'bank_transfer',
-    transaction_id: '',
-    notes: ''
-  });
-  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchPayments();
@@ -45,28 +40,22 @@ const MyPayments = () => {
     }
   };
 
-  const handlePaymentSubmit = async () => {
-    if (!paymentData.payment_method) {
-      toast.error('Pilih metode pembayaran');
-      return;
+  const handlePayNow = (payment) => {
+    // Redirect to BookingPayment page with booking ID
+    if (payment.booking_id) {
+      navigate(`/booking/${payment.booking_id}/payment`);
+    } else {
+      toast.error('Data booking tidak ditemukan');
     }
+  };
 
-    if (!paymentData.transaction_id) {
-      toast.error('Masukkan ID transaksi');
-      return;
-    }
-
-    setUploading(true);
+  const handleDownloadInvoice = (payment) => {
     try {
-      await paymentsAPI.confirmPayment(selectedPayment.id, paymentData);
-      toast.success('Pembayaran berhasil dikonfirmasi!');
-      setShowPaymentModal(false);
-      setPaymentData({ payment_method: 'bank_transfer', transaction_id: '', notes: '' });
-      fetchPayments();
+      generateInvoicePDF(payment);
+      toast.success('Invoice berhasil diunduh');
     } catch (error) {
-      toast.error('Gagal mengkonfirmasi pembayaran');
-    } finally {
-      setUploading(false);
+      console.error('Error generating invoice:', error);
+      toast.error('Gagal membuat invoice');
     }
   };
 
@@ -190,6 +179,11 @@ const MyPayments = () => {
                     <p className="text-sm text-gray-500">
                       Kode: {payment.payment_code}
                     </p>
+                    {payment.booking && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Booking: {payment.booking.booking_code} • Unit {payment.booking.apartment?.unit_number || '-'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <Badge status={payment.payment_status}>
@@ -253,10 +247,7 @@ const MyPayments = () => {
               {payment.payment_status === 'pending' && (
                 <div className="flex space-x-2">
                   <Button
-                    onClick={() => {
-                      setSelectedPayment(payment);
-                      setShowPaymentModal(true);
-                    }}
+                    onClick={() => handlePayNow(payment)}
                     className="flex-1"
                   >
                     <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
@@ -265,13 +256,24 @@ const MyPayments = () => {
                 </div>
               )}
 
-              {payment.payment_status === 'completed' && payment.receipt_file && (
-                <Button
-                  variant="outline"
-                  onClick={() => window.open(payment.receipt_file, '_blank')}
-                >
-                  Lihat Bukti Pembayaran
-                </Button>
+              {payment.payment_status === 'completed' && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="primary"
+                    onClick={() => handleDownloadInvoice(payment)}
+                  >
+                    <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
+                    Download Invoice
+                  </Button>
+                  {payment.receipt_file && (
+                    <Button
+                      variant="outline"
+                      onClick={() => window.open(payment.receipt_file, '_blank')}
+                    >
+                      Lihat Bukti Pembayaran
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           ))}
@@ -282,102 +284,6 @@ const MyPayments = () => {
           <p className="text-gray-600 mb-4">Belum ada transaksi pembayaran</p>
         </div>
       )}
-
-      {/* Payment Modal */}
-      <Modal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        title="Konfirmasi Pembayaran"
-        size="lg"
-      >
-        {selectedPayment && (
-          <div className="space-y-4">
-            <div className="bg-purple-50 rounded-lg p-4 mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">Total Pembayaran:</span>
-                <span className="text-2xl font-bold text-purple-600">
-                  {formatCurrency(selectedPayment.amount)}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600">
-                {getPaymentTypeText(selectedPayment.payment_type)} - {selectedPayment.payment_code}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Metode Pembayaran
-              </label>
-              <select
-                value={paymentData.payment_method}
-                onChange={(e) => setPaymentData(prev => ({ ...prev, payment_method: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="bank_transfer">Transfer Bank</option>
-                <option value="credit_card">Kartu Kredit/Debit</option>
-                <option value="e_wallet">E-Wallet</option>
-              </select>
-            </div>
-
-            {paymentData.payment_method === 'bank_transfer' && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-900 mb-2">Informasi Transfer:</h4>
-                <div className="space-y-1 text-sm text-blue-800">
-                  <p><strong>Bank:</strong> BCA</p>
-                  <p><strong>No. Rekening:</strong> 1234567890</p>
-                  <p><strong>Atas Nama:</strong> PT Vida View</p>
-                  <p className="mt-2 text-xs text-blue-600">
-                    * Silakan transfer sesuai nominal di atas dan masukkan ID transaksi
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ID Transaksi / Nomor Referensi
-              </label>
-              <input
-                type="text"
-                value={paymentData.transaction_id}
-                onChange={(e) => setPaymentData(prev => ({ ...prev, transaction_id: e.target.value }))}
-                placeholder="Masukkan ID transaksi"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Catatan (Opsional)
-              </label>
-              <textarea
-                value={paymentData.notes}
-                onChange={(e) => setPaymentData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Tambahkan catatan..."
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
-            </div>
-
-            <div className="flex space-x-3">
-              <Button
-                variant="secondary"
-                onClick={() => setShowPaymentModal(false)}
-                fullWidth
-              >
-                Batal
-              </Button>
-              <Button
-                onClick={handlePaymentSubmit}
-                loading={uploading}
-                fullWidth
-              >
-                Konfirmasi Pembayaran
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };

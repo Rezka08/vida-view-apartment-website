@@ -8,7 +8,7 @@ import axios from '../../api/axios';
 
 const EditUnitModal = ({ isOpen, onClose, onSuccess, apartment }) => {
     const [loading, setLoading] = useState(false);
-    onst [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
     name: '',
     type: '1BR',
     monthly_rent: '',

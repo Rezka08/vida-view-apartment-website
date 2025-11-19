@@ -151,6 +151,8 @@ class Booking(db.Model):
     deposit_paid = db.Column(db.Numeric(12, 2))
     utility_deposit = db.Column(db.Numeric(12, 2))
     admin_fee = db.Column(db.Numeric(12, 2))
+    promotion_id = db.Column(db.Integer, db.ForeignKey('promotions.id'), nullable=True)
+    discount_amount = db.Column(db.Numeric(12, 2), default=0)
     total_amount = db.Column(db.Numeric(12, 2))
     status = db.Column(db.Enum('pending', 'confirmed', 'active', 'completed', 'cancelled', 'rejected'), default='pending')
     rejection_reason = db.Column(db.Text)
@@ -166,6 +168,7 @@ class Booking(db.Model):
     
     # Relationships
     payments = db.relationship('Payment', backref='booking', lazy=True, cascade='all, delete-orphan')
+    promotion = db.relationship('Promotion', backref='bookings', lazy=True)
     
     def to_dict(self, include_relations=False):
         data = {
@@ -178,8 +181,11 @@ class Booking(db.Model):
             'total_months': self.total_months,
             'monthly_rent': float(self.monthly_rent) if self.monthly_rent else None,
             'deposit_paid': float(self.deposit_paid) if self.deposit_paid else None,
+            'deposit_amount': float(self.deposit_paid) if self.deposit_paid else None,  # Alias for compatibility
             'utility_deposit': float(self.utility_deposit) if self.utility_deposit else None,
             'admin_fee': float(self.admin_fee) if self.admin_fee else None,
+            'promotion_id': self.promotion_id,
+            'discount_amount': float(self.discount_amount) if self.discount_amount else 0,
             'total_amount': float(self.total_amount) if self.total_amount else None,
             'status': self.status,
             'rejection_reason': self.rejection_reason,
@@ -193,7 +199,8 @@ class Booking(db.Model):
             data['apartment'] = self.apartment.to_dict() if self.apartment else None
             data['tenant'] = self.tenant.to_dict() if self.tenant else None
             data['payments'] = [payment.to_dict() for payment in self.payments]
-        
+            data['promotion'] = self.promotion.to_dict() if self.promotion else None
+
         return data
 
 class Payment(db.Model):
@@ -216,8 +223,8 @@ class Payment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    def to_dict(self):
-        return {
+    def to_dict(self, include_relations=False):
+        data = {
             'id': self.id,
             'booking_id': self.booking_id,
             'payment_code': self.payment_code,
@@ -229,8 +236,42 @@ class Payment(db.Model):
             'due_date': self.due_date.isoformat() if self.due_date else None,
             'transaction_id': self.transaction_id,
             'receipt_file': self.receipt_file,
+            'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+        if include_relations and self.booking:
+            data['booking'] = {
+                'id': self.booking.id,
+                'booking_code': self.booking.booking_code,
+                'start_date': self.booking.start_date.isoformat() if self.booking.start_date else None,
+                'end_date': self.booking.end_date.isoformat() if self.booking.end_date else None,
+                'total_months': self.booking.total_months,
+                'monthly_rent': float(self.booking.monthly_rent) if self.booking.monthly_rent else 0,
+                'deposit_paid': float(self.booking.deposit_paid) if self.booking.deposit_paid else 0,
+                'utility_deposit': float(self.booking.utility_deposit) if self.booking.utility_deposit else 0,
+                'admin_fee': float(self.booking.admin_fee) if self.booking.admin_fee else 0,
+                'discount_amount': float(self.booking.discount_amount) if self.booking.discount_amount else 0,
+                'total_amount': float(self.booking.total_amount) if self.booking.total_amount else 0,
+                'apartment': {
+                    'id': self.booking.apartment.id,
+                    'unit_number': self.booking.apartment.unit_number,
+                    'unit_type': self.booking.apartment.unit_type
+                } if self.booking.apartment else None,
+                'tenant': {
+                    'id': self.booking.tenant.id,
+                    'full_name': self.booking.tenant.full_name,
+                    'email': self.booking.tenant.email,
+                    'phone': self.booking.tenant.phone
+                } if self.booking.tenant else None,
+                'promotion': {
+                    'id': self.booking.promotion.id,
+                    'code': self.booking.promotion.code,
+                    'title': self.booking.promotion.title
+                } if self.booking.promotion else None
+            }
+
+        return data
 
 class UnitPhoto(db.Model):
     __tablename__ = 'unit_photos'

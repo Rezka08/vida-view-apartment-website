@@ -26,10 +26,10 @@ const PaymentVerification = () => {
   const fetchPayments = async () => {
     setLoading(true);
     try {
-      const response = await paymentsAPI.getPayments({ 
-        page: pagination.page, 
+      const response = await paymentsAPI.getPayments({
+        page: pagination.page,
         per_page: pagination.per_page,
-        status: 'pending'
+        status: 'verifying'  // Changed from 'pending' to 'verifying'
       });
       setPayments(response.payments);
       setPagination(response.pagination);

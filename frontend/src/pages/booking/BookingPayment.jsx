@@ -44,7 +44,20 @@ const BookingPayment = () => {
     try {
       const bookingResponse = await bookingsAPI.getBooking(bookingId);
       setBooking(bookingResponse.booking);
-      
+
+      // Check if booking is cancelled or rejected
+      if (bookingResponse.booking.status === 'cancelled') {
+        toast.error('Booking ini telah dibatalkan');
+        navigate('/my-bookings');
+        return;
+      }
+
+      if (bookingResponse.booking.status === 'rejected') {
+        toast.error('Booking ini telah ditolak');
+        navigate('/my-bookings');
+        return;
+      }
+
       // Get payment for this booking
       const paymentsResponse = await paymentsAPI.getBookingPayments(bookingId);
       if (paymentsResponse.payments && paymentsResponse.payments.length > 0) {
@@ -401,6 +414,9 @@ const BookingPayment = () => {
                 deposit={booking.deposit_amount}
                 utilityDeposit={booking.utility_deposit}
                 adminFee={booking.admin_fee}
+                discount={booking.discount_amount || 0}
+                appliedPromo={booking.promotion}
+                total={booking.total_amount}
               />
             )}
 

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Booking, Apartment, Payment, User
+from models import db, Booking, Apartment, Payment, User, Promotion
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils import (role_required, generate_booking_code, generate_payment_code,
                    calculate_total_amount, create_notification, log_activity,
@@ -79,7 +79,7 @@ def get_booking(booking_id):
             if booking.apartment.owner_id != current_user_id:
                 return jsonify({'message': 'Access denied'}), 403
 
-        return jsonify(booking.to_dict(include_relations=True)), 200
+        return jsonify({'booking': booking.to_dict(include_relations=True)}), 200
         
     except Exception as e:
         return jsonify({'message': str(e)}), 500
@@ -138,10 +138,29 @@ def create_booking():
         deposit = apartment.deposit_amount or monthly_rent
         utility_deposit = data.get('utility_deposit', monthly_rent * Decimal('0.2'))  # 20% of monthly rent
         admin_fee = data.get('admin_fee', Decimal('500000'))  # Default admin fee
-        
-        total_amount = calculate_total_amount(
+
+        # Calculate subtotal before discount
+        subtotal = calculate_total_amount(
             monthly_rent, total_months, deposit, utility_deposit, admin_fee
         )
+
+        # Apply promotion discount if provided
+        discount_amount = Decimal('0')
+        promotion_id = data.get('promotion_id')
+
+        if promotion_id:
+            promotion = Promotion.query.get(promotion_id)
+            if promotion and promotion.active:
+                # Check if promotion is valid (dates)
+                today = datetime.now().date()
+                if promotion.start_date <= today <= promotion.end_date:
+                    if promotion.type == 'percent':
+                        discount_amount = subtotal * (Decimal(str(promotion.value)) / Decimal('100'))
+                    elif promotion.type == 'fixed_amount':
+                        discount_amount = Decimal(str(promotion.value))
+
+        # Calculate final total amount after discount
+        total_amount = subtotal - discount_amount
         
         # Create booking
         booking = Booking(
@@ -155,6 +174,8 @@ def create_booking():
             deposit_paid=deposit,
             utility_deposit=utility_deposit,
             admin_fee=admin_fee,
+            promotion_id=promotion_id if promotion_id else None,
+            discount_amount=discount_amount,
             total_amount=total_amount,
             status='pending',
             notes=data.get('notes')
@@ -163,12 +184,12 @@ def create_booking():
         db.session.add(booking)
         db.session.flush()
         
-        # Create initial payment record (deposit)
+        # Create initial payment record (for total amount)
         payment = Payment(
             booking_id=booking.id,
             payment_code=generate_payment_code(),
             payment_type='deposit',
-            amount=deposit,
+            amount=total_amount,  # Use total_amount after discount
             payment_status='pending',
             due_date=datetime.now().date() + timedelta(days=3)
         )
