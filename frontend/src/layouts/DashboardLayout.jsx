@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   HomeIcon,
@@ -16,12 +16,28 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../stores/authStore';
+import { useNotificationStore } from '../stores/notificationStore';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
+
+  // Fetch unread count on mount and periodically
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+
+      // Poll for new notifications every 30 seconds
+      const interval = setInterval(() => {
+        fetchUnreadCount();
+      }, 30000);
+
+      return () => clearInterval(interval);
+    }
+  }, [user, fetchUnreadCount]);
 
   const handleLogout = () => {
     logout();
@@ -201,7 +217,11 @@ const DashboardLayout = () => {
                 className="relative p-2 text-gray-600 hover:text-purple-600 rounded-lg hover:bg-gray-100"
               >
                 <BellIcon className="h-6 w-6" />
-                {/* Notification badge would go here */}
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             </div>
           </div>

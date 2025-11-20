@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon, BellIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../stores/authStore';
@@ -8,11 +8,25 @@ import Button from '../components/common/Button';
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  const { unreadCount } = useNotificationStore();
+  const { unreadCount, fetchUnreadCount } = useNotificationStore();
+
+  // Fetch unread count on mount and periodically
+  useEffect(() => {
+    if (user) {
+      fetchUnreadCount();
+
+      // Poll for new notifications every 30 seconds
+      const interval = setInterval(() => {
+        fetchUnreadCount();
+      }, 30000);
+
+      return () => clearInterval(interval);
+    }
+  }, [user, fetchUnreadCount]);
 
   const navigation = [
     { name: 'Beranda', href: '/' },

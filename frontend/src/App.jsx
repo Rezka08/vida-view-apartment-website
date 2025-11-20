@@ -44,6 +44,9 @@ import BookingForm from './pages/booking/BookingForm'
 import BookingPayment from './pages/booking/BookingPayment'
 import BookingSuccess from './pages/booking/BookingSuccess'
 
+// Shared Pages
+import Notifications from './pages/Notifications'
+
 // Route Guards
 import ProtectedRoute from './routes/ProtectedRoute'
 import RoleRoute from './routes/RoleRoute'
@@ -96,6 +99,11 @@ function App() {
         <Route path="/profile" element={
           <RoleRoute allowedRoles={['tenant', 'owner', 'admin']}>
             <TenantProfile />
+          </RoleRoute>
+        } />
+        <Route path="/notifications" element={
+          <RoleRoute allowedRoles={['tenant', 'owner', 'admin']}>
+            <Notifications />
           </RoleRoute>
         } />
 
