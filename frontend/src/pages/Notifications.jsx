@@ -45,9 +45,9 @@ const Notifications = () => {
       };
 
       if (filter === 'unread') {
-        params.is_read = false;
+        params.is_read = 'false';
       } else if (filter === 'read') {
-        params.is_read = true;
+        params.is_read = 'true';
       }
 
       const response = await notificationsAPI.getNotifications(params);

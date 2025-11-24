@@ -10,16 +10,21 @@ notifications_bp = Blueprint('notifications', __name__, url_prefix='/api/notific
 def get_notifications():
     """Get user notifications"""
     try:
-        current_user_id = get_jwt_identity()
-        
+        current_user_id = int(get_jwt_identity())
+
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
-        is_read = request.args.get('is_read', type=bool)
-        
+        is_read_param = request.args.get('is_read')
+
         query = Notification.query.filter_by(user_id=current_user_id)
-        
-        if is_read is not None:
-            query = query.filter_by(is_read=is_read)
+
+        # Parse is_read parameter correctly
+        if is_read_param is not None:
+            # Convert string 'true'/'false' to boolean
+            if is_read_param.lower() == 'true':
+                query = query.filter_by(is_read=True)
+            elif is_read_param.lower() == 'false':
+                query = query.filter_by(is_read=False)
         
         query = query.order_by(Notification.created_at.desc())
         
@@ -43,13 +48,13 @@ def get_notifications():
 def mark_as_read(notification_id):
     """Mark notification as read"""
     try:
-        current_user_id = get_jwt_identity()
-        
+        current_user_id = int(get_jwt_identity())
+
         notification = Notification.query.get(notification_id)
-        
+
         if not notification:
             return jsonify({'message': 'Notification not found'}), 404
-        
+
         if notification.user_id != current_user_id:
             return jsonify({'message': 'Access denied'}), 403
         
@@ -69,7 +74,7 @@ def mark_as_read(notification_id):
 def mark_all_read():
     """Mark all notifications as read"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         
         Notification.query.filter_by(
             user_id=current_user_id,
@@ -91,7 +96,7 @@ def mark_all_read():
 def get_unread_count():
     """Get unread notifications count"""
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = int(get_jwt_identity())
         
         count = Notification.query.filter_by(
             user_id=current_user_id,
@@ -110,13 +115,13 @@ def get_unread_count():
 def delete_notification(notification_id):
     """Delete notification"""
     try:
-        current_user_id = get_jwt_identity()
-        
+        current_user_id = int(get_jwt_identity())
+
         notification = Notification.query.get(notification_id)
-        
+
         if not notification:
             return jsonify({'message': 'Notification not found'}), 404
-        
+
         if notification.user_id != current_user_id:
             return jsonify({'message': 'Access denied'}), 403
         
