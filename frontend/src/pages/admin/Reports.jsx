@@ -6,6 +6,7 @@ import Chart from '../../components/dashboard/Chart';
 import Button from '../../components/common/Button';
 import Loading from '../../components/common/Loading';
 import { formatCurrency } from '../../utils/formatters';
+import { exportReportPDF, exportReportExcel } from '../../utils/reportExporter';
 
 const Reports = () => {
   const [loading, setLoading] = useState(true);
@@ -37,8 +38,19 @@ const Reports = () => {
     }
   };
 
-  const handleExport = (type) => {
-    toast(`Export ${type} akan segera tersedia`, { icon: 'ℹ️' });
+  const handleExport = async (type) => {
+    try {
+      if (type === 'pdf') {
+        await exportReportPDF(occupancyData, revenueData, topApartments, selectedYear);
+        toast.success('Laporan PDF berhasil diunduh');
+      } else if (type === 'excel') {
+        exportReportExcel(occupancyData, revenueData, topApartments, selectedYear);
+        toast.success('Laporan Excel berhasil diunduh');
+      }
+    } catch (error) {
+      console.error('Error exporting report:', error);
+      toast.error('Gagal mengekspor laporan');
+    }
   };
 
   if (loading) return <Loading fullScreen text="Memuat laporan..." />;

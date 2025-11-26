@@ -49,9 +49,9 @@ const MyPayments = () => {
     }
   };
 
-  const handleDownloadInvoice = (payment) => {
+  const handleDownloadInvoice = async (payment) => {
     try {
-      generateInvoicePDF(payment);
+      await generateInvoicePDF(payment);
       toast.success('Invoice berhasil diunduh');
     } catch (error) {
       console.error('Error generating invoice:', error);

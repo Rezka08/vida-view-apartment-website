@@ -6,7 +6,7 @@ import { formatCurrency, formatDate } from './formatters';
  * Generate and download invoice PDF for a payment
  * @param {Object} payment - Payment object with booking and tenant details
  */
-export const generateInvoicePDF = (payment) => {
+export const generateInvoicePDF = async (payment) => {
   if (!payment || !payment.booking) {
     console.error('Invalid payment data for invoice generation');
     return;
@@ -29,17 +29,29 @@ export const generateInvoicePDF = (payment) => {
 
   // ===== HEADER =====
   // Logo and Company Info (Left side)
-  doc.setFillColor(...primaryColor);
-  doc.roundedRect(leftMargin, currentY, 8, 8, 1, 1, 'F');
-  doc.setFontSize(20);
-  doc.setTextColor(...primaryColor);
-  doc.setFont('helvetica', 'bold');
-  doc.text('VIDA VIEW', leftMargin + 12, currentY + 6);
+  try {
+    const logoImg = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = '/logo_full.png';
+    });
+    doc.addImage(logoImg, 'PNG', leftMargin, currentY, 50, 15);
+  } catch (error) {
+    // Fallback to text if image fails to load
+    console.warn('Failed to load logo, using text fallback');
+    doc.setFillColor(...primaryColor);
+    doc.roundedRect(leftMargin, currentY, 8, 8, 1, 1, 'F');
+    doc.setFontSize(20);
+    doc.setTextColor(...primaryColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text('VIDA VIEW', leftMargin + 12, currentY + 6);
 
-  doc.setFontSize(9);
-  doc.setTextColor(...lightColor);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Premium Apartment Living', leftMargin, currentY + 13);
+    doc.setFontSize(9);
+    doc.setTextColor(...lightColor);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Premium Apartment Living', leftMargin, currentY + 13);
+  }
 
   // Invoice Title (Right side)
   doc.setFontSize(24);
