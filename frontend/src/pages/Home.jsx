@@ -263,6 +263,23 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Virtual Tour & Siteplan Section */}
+      <section className="py-16 bg-purple-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-purple-800 mb-8">
+            Site Plan VidaView Makassar
+          </h2>
+
+          <div className="relative shadow-2xl rounded-xl overflow-hidden border-4 border-white">
+            <img
+              src="/img/site_plan.webp" 
+              alt="Siteplan Vida View Makassar"
+              className="w-full h-auto object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
