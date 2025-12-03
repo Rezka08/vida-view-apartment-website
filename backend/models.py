@@ -18,6 +18,9 @@ class User(db.Model):
     profile_photo = db.Column(db.String(255))
     id_card_number = db.Column(db.String(50))
     id_card_photo = db.Column(db.String(255))
+    selfie_photo = db.Column(db.String(255))
+    income_proof = db.Column(db.String(255))
+    reference_letter = db.Column(db.String(255))
     address = db.Column(db.Text)
     birth_date = db.Column(db.Date)
     status = db.Column(db.Enum('active', 'inactive', 'suspended'), default='active')
@@ -52,12 +55,16 @@ class User(db.Model):
             'address': self.address,
             'birth_date': self.birth_date.isoformat() if self.birth_date else None,
             'status': self.status,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
         if include_sensitive:
             data.update({
                 'id_card_number': self.id_card_number,
                 'id_card_photo': self.id_card_photo,
+                'selfie_photo': self.selfie_photo,
+                'income_proof': self.income_proof,
+                'reference_letter': self.reference_letter,
                 'email_verified_at': self.email_verified_at.isoformat() if self.email_verified_at else None,
                 'document_verified_at': self.document_verified_at.isoformat() if self.document_verified_at else None
             })

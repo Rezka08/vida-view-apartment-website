@@ -106,27 +106,49 @@ def upload_documents():
     try:
         current_user_id = get_jwt_identity()
         user = User.query.get(current_user_id)
-        
+
         if not user:
             return jsonify({'message': 'User not found'}), 404
-        
+
+        # Handle ID card upload
         if 'id_card' in request.files:
             file = request.files['id_card']
             photo_url = save_file(file, 'documents')
-            
             if photo_url:
                 user.id_card_photo = photo_url
-        
+
+        # Handle selfie with ID card upload
+        if 'selfie' in request.files:
+            file = request.files['selfie']
+            photo_url = save_file(file, 'documents')
+            if photo_url:
+                user.selfie_photo = photo_url
+
+        # Handle income proof upload
+        if 'income' in request.files:
+            file = request.files['income']
+            photo_url = save_file(file, 'documents')
+            if photo_url:
+                user.income_proof = photo_url
+
+        # Handle reference letter upload
+        if 'reference' in request.files:
+            file = request.files['reference']
+            photo_url = save_file(file, 'documents')
+            if photo_url:
+                user.reference_letter = photo_url
+
+        # Handle ID card number
         if 'id_card_number' in request.form:
             user.id_card_number = request.form['id_card_number']
-        
+
         db.session.commit()
-        
+
         return jsonify({
             'message': 'Documents uploaded successfully',
             'user': user.to_dict(include_sensitive=True)
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': str(e)}), 500
@@ -169,7 +191,7 @@ def get_users():
         users = query.paginate(page=page, per_page=per_page, error_out=False)
         
         return jsonify({
-            'users': [user.to_dict() for user in users.items],
+            'users': [user.to_dict(include_sensitive=True) for user in users.items],
             'pagination': {
                 'page': users.page,
                 'per_page': users.per_page,
@@ -244,7 +266,7 @@ def update_user(user_id):
         
         return jsonify({
             'message': 'User updated successfully',
-            'user': user.to_dict()
+            'user': user.to_dict(include_sensitive=True)
         }), 200
         
     except Exception as e:
@@ -323,7 +345,7 @@ def verify_documents(user_id):
         
         return jsonify({
             'message': 'Documents verified successfully',
-            'user': user.to_dict()
+            'user': user.to_dict(include_sensitive=True)
         }), 200
         
     except Exception as e:

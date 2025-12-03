@@ -28,6 +28,8 @@ const MyDocuments = () => {
     file: null
   });
   const [documents, setDocuments] = useState([]);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
 
   useEffect(() => {
     loadProfile();
@@ -36,20 +38,53 @@ const MyDocuments = () => {
   const loadProfile = async () => {
     setLoading(true);
     try {
-      await fetchProfile();
-      // Mock documents for demo - in real app, get from API
-      setDocuments([
+      // Fetch fresh profile data and use the returned value immediately
+      const freshProfile = await fetchProfile();
+
+      // Build documents list from fresh profile data
+      const docs = [
         {
           id: 1,
           type: 'id_card',
           name: 'KTP',
-          file_name: profile?.id_card_photo ? 'ktp.jpg' : null,
-          file_url: profile?.id_card_photo,
-          status: profile?.document_verified_at ? 'verified' : 'pending',
-          uploaded_at: profile?.created_at,
-          verified_at: profile?.document_verified_at
+          file_name: freshProfile?.id_card_photo ? 'ktp.jpg' : null,
+          file_url: freshProfile?.id_card_photo,
+          status: freshProfile?.document_verified_at ? 'verified' : (freshProfile?.id_card_photo ? 'pending' : 'not_uploaded'),
+          uploaded_at: freshProfile?.id_card_photo ? freshProfile?.updated_at : null,
+          verified_at: freshProfile?.document_verified_at
+        },
+        {
+          id: 2,
+          type: 'selfie',
+          name: 'Selfie dengan KTP',
+          file_name: freshProfile?.selfie_photo ? 'selfie.jpg' : null,
+          file_url: freshProfile?.selfie_photo,
+          status: freshProfile?.document_verified_at ? 'verified' : (freshProfile?.selfie_photo ? 'pending' : 'not_uploaded'),
+          uploaded_at: freshProfile?.selfie_photo ? freshProfile?.updated_at : null,
+          verified_at: freshProfile?.document_verified_at
+        },
+        {
+          id: 3,
+          type: 'income',
+          name: 'Bukti Penghasilan',
+          file_name: freshProfile?.income_proof ? 'income.pdf' : null,
+          file_url: freshProfile?.income_proof,
+          status: freshProfile?.document_verified_at ? 'verified' : (freshProfile?.income_proof ? 'pending' : 'not_uploaded'),
+          uploaded_at: freshProfile?.income_proof ? freshProfile?.updated_at : null,
+          verified_at: freshProfile?.document_verified_at
+        },
+        {
+          id: 4,
+          type: 'reference',
+          name: 'Surat Referensi',
+          file_name: freshProfile?.reference_letter ? 'reference.pdf' : null,
+          file_url: freshProfile?.reference_letter,
+          status: freshProfile?.document_verified_at ? 'verified' : (freshProfile?.reference_letter ? 'pending' : 'not_uploaded'),
+          uploaded_at: freshProfile?.reference_letter ? freshProfile?.updated_at : null,
+          verified_at: freshProfile?.document_verified_at
         }
-      ]);
+      ];
+      setDocuments(docs);
     } catch (error) {
       toast.error('Gagal memuat dokumen');
     } finally {
@@ -91,16 +126,27 @@ const MyDocuments = () => {
     setUploading(true);
     try {
       const formData = new FormData();
-      
-      if (uploadData.document_type === 'id_card') {
-        formData.append('id_card', uploadData.file);
+
+      // Map document type to form field name
+      const fieldMap = {
+        'id_card': 'id_card',
+        'selfie': 'selfie',
+        'income': 'income',
+        'reference': 'reference'
+      };
+
+      const fieldName = fieldMap[uploadData.document_type];
+      if (fieldName) {
+        formData.append(fieldName, uploadData.file);
       }
 
       await usersAPI.uploadDocuments(formData);
       toast.success('Dokumen berhasil diupload!');
       setShowUploadModal(false);
       setUploadData({ document_type: '', file: null });
-      loadProfile();
+
+      // Reload profile to update document list
+      await loadProfile();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal upload dokumen');
     } finally {
@@ -110,7 +156,8 @@ const MyDocuments = () => {
 
   const handleViewDocument = (doc) => {
     if (doc.file_url) {
-      window.open(doc.file_url, '_blank');
+      setSelectedDocument(doc);
+      setShowPreviewModal(true);
     } else {
       toast.error('File tidak tersedia');
     }
@@ -425,6 +472,101 @@ const MyDocuments = () => {
             >
               Upload Dokumen
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Preview Modal */}
+      <Modal
+        isOpen={showPreviewModal}
+        onClose={() => {
+          setShowPreviewModal(false);
+          setSelectedDocument(null);
+        }}
+        title={`Preview - ${selectedDocument?.name}`}
+        size="xl"
+      >
+        <div className="space-y-4">
+          {/* Document Info */}
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div>
+              <p className="text-sm font-medium text-gray-900">{selectedDocument?.name}</p>
+              <p className="text-xs text-gray-600">
+                {selectedDocument?.uploaded_at && `Upload: ${formatDate(selectedDocument.uploaded_at, 'short')}`}
+              </p>
+            </div>
+            {selectedDocument?.status && (
+              <Badge variant={
+                selectedDocument.status === 'verified' ? 'success' :
+                selectedDocument.status === 'pending' ? 'warning' : 'default'
+              }>
+                {selectedDocument.status === 'verified' ? 'Terverifikasi' :
+                 selectedDocument.status === 'pending' ? 'Menunggu Verifikasi' : 'Belum Upload'}
+              </Badge>
+            )}
+          </div>
+
+          {/* Document Preview */}
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="bg-gray-100 p-4 flex items-center justify-center" style={{ minHeight: '400px' }}>
+              {selectedDocument?.file_url ? (
+                selectedDocument.file_url.toLowerCase().endsWith('.pdf') ? (
+                  <div className="text-center">
+                    <svg className="h-24 w-24 mx-auto text-red-500 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                    </svg>
+                    <p className="text-gray-600 mb-4">PDF Document</p>
+                    <Button
+                      variant="primary"
+                      onClick={() => window.open(selectedDocument.file_url, '_blank')}
+                    >
+                      Buka PDF di Tab Baru
+                    </Button>
+                  </div>
+                ) : (
+                  <img
+                    src={selectedDocument.file_url}
+                    alt={selectedDocument.name}
+                    className="max-w-full max-h-[500px] object-contain"
+                  />
+                )
+              ) : (
+                <p className="text-gray-500">Tidak ada preview</p>
+              )}
+            </div>
+          </div>
+
+          {/* Verification Info */}
+          {selectedDocument?.verified_at && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-800">
+                <strong>Terverifikasi:</strong> {formatDate(selectedDocument.verified_at, 'time')}
+              </p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex space-x-3 pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowPreviewModal(false);
+                setSelectedDocument(null);
+              }}
+              fullWidth
+            >
+              Tutup
+            </Button>
+            {selectedDocument?.file_url && (
+              <Button
+                variant="outline"
+                onClick={() => window.open(selectedDocument.file_url, '_blank')}
+                fullWidth
+              >
+                <EyeIcon className="h-5 w-5 mr-2" />
+                Buka di Tab Baru
+              </Button>
+            )}
           </div>
         </div>
       </Modal>

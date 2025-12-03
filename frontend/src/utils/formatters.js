@@ -17,60 +17,72 @@ export const formatCurrency = (amount) => {
 };
 
 /**
- * Format date to Indonesian format
+ * Format date to Indonesian format with WITA timezone (GMT+8)
  * @param {string|Date} date - Date to format
  * @param {string} format - Format type ('short', 'long', 'time')
  * @returns {string} Formatted date string
  */
 export const formatDate = (date, format = 'long') => {
   if (!date) return '-';
-  
+
+  // Parse date and ensure it's treated as UTC, then convert to WITA (GMT+8)
   const dateObj = new Date(date);
-  
+
   if (format === 'short') {
     return new Intl.DateTimeFormat('id-ID', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'Asia/Makassar' // WITA timezone
     }).format(dateObj);
   }
-  
+
   if (format === 'time') {
     return new Intl.DateTimeFormat('id-ID', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Makassar' // WITA timezone
     }).format(dateObj);
   }
-  
+
   // long format (default)
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'Asia/Makassar' // WITA timezone
   }).format(dateObj);
 };
 
 /**
- * Format relative time (e.g., "2 hari yang lalu")
+ * Format relative time (e.g., "2 hari yang lalu") with WITA timezone
  * @param {string|Date} date - Date to format
  * @returns {string} Relative time string
  */
 export const formatRelativeTime = (date) => {
   if (!date) return '-';
-  
+
+  // Parse the date (backend sends UTC)
   const dateObj = new Date(date);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now - dateObj) / 1000);
-  
+
+  // Get current time in WITA (Asia/Makassar timezone)
+  const nowWITA = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Makassar' }));
+
+  // Get the input date in WITA timezone
+  const dateWITA = new Date(dateObj.toLocaleString('en-US', { timeZone: 'Asia/Makassar' }));
+
+  // Calculate difference in seconds using WITA times
+  const diffInSeconds = Math.floor((nowWITA - dateWITA) / 1000);
+
   if (diffInSeconds < 60) return 'Baru saja';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`;
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`;
   if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 604800)} minggu yang lalu`;
-  
+
   return formatDate(date);
 };
 

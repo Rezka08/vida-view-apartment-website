@@ -6,7 +6,8 @@ import {
   TrashIcon,
   CheckCircleIcon,
   XCircleIcon,
-  UserPlusIcon
+  UserPlusIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
 import usersAPI from '../../api/users';
 import Badge from '../../components/common/Badge';
@@ -35,6 +36,7 @@ const UserManagement = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
   const [editFormData, setEditFormData] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -92,7 +94,7 @@ const UserManagement = () => {
       await usersAPI.updateUser(selectedUser.id, editFormData);
       toast.success('Data pengguna berhasil diperbarui');
       setShowEditModal(false);
-      fetchUsers();
+      await fetchUsers();
     } catch (error) {
       toast.error('Gagal memperbarui data pengguna');
     } finally {
@@ -106,7 +108,7 @@ const UserManagement = () => {
       await usersAPI.deleteUser(selectedUser.id);
       toast.success('Pengguna berhasil dihapus');
       setShowDeleteModal(false);
-      fetchUsers();
+      await fetchUsers();
     } catch (error) {
       toast.error('Gagal menghapus pengguna');
     } finally {
@@ -120,7 +122,8 @@ const UserManagement = () => {
       await usersAPI.verifyDocuments(selectedUser.id);
       toast.success('Dokumen berhasil diverifikasi');
       setShowVerifyModal(false);
-      fetchUsers();
+      setShowDocumentsModal(false);
+      await fetchUsers();
     } catch (error) {
       toast.error('Gagal memverifikasi dokumen');
     } finally {
@@ -258,14 +261,30 @@ const UserManagement = () => {
                     {formatDate(user.created_at, 'short')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {user.document_verified_at ? (
-                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                    ) : (
-                      <XCircleIcon className="h-5 w-5 text-gray-300" />
-                    )}
+                    <div className="flex items-center space-x-2">
+                      {user.document_verified_at ? (
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      ) : user.id_card_photo ? (
+                        <XCircleIcon className="h-5 w-5 text-yellow-500" />
+                      ) : (
+                        <XCircleIcon className="h-5 w-5 text-gray-300" />
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
+                      {user.id_card_photo && (
+                        <button
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowDocumentsModal(true);
+                          }}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Lihat Dokumen"
+                        >
+                          <EyeIcon className="h-5 w-5" />
+                        </button>
+                      )}
                       {!user.document_verified_at && user.id_card_photo && (
                         <button
                           onClick={() => {
@@ -462,6 +481,188 @@ const UserManagement = () => {
           >
             Verifikasi
           </Button>
+        </div>
+      </Modal>
+
+      {/* Documents Modal */}
+      <Modal
+        isOpen={showDocumentsModal}
+        onClose={() => setShowDocumentsModal(false)}
+        title={`Dokumen - ${selectedUser?.full_name}`}
+        size="xl"
+      >
+        <div className="space-y-6">
+          {/* Document Status */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <h4 className="font-medium text-gray-900">Status Verifikasi</h4>
+              <p className="text-sm text-gray-600">
+                {selectedUser?.document_verified_at
+                  ? `Terverifikasi pada ${formatDate(selectedUser.document_verified_at)}`
+                  : 'Belum diverifikasi'
+                }
+              </p>
+            </div>
+            <Badge variant={selectedUser?.document_verified_at ? 'success' : 'warning'}>
+              {selectedUser?.document_verified_at ? 'Terverifikasi' : 'Pending'}
+            </Badge>
+          </div>
+
+          {/* Documents Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* ID Card */}
+            {selectedUser?.id_card_photo && (
+              <div className="border border-gray-200 rounded-lg p-4">
+                <h5 className="font-medium text-gray-900 mb-2 flex items-center">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
+                  Kartu Identitas (KTP)
+                </h5>
+                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden mb-3">
+                  <img
+                    src={selectedUser.id_card_photo}
+                    alt="KTP"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  onClick={() => window.open(selectedUser.id_card_photo, '_blank')}
+                >
+                  <EyeIcon className="h-4 w-4 mr-1" />
+                  Lihat Full
+                </Button>
+              </div>
+            )}
+
+            {/* Selfie with ID */}
+            {selectedUser?.selfie_photo && (
+              <div className="border border-gray-200 rounded-lg p-4">
+                <h5 className="font-medium text-gray-900 mb-2 flex items-center">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
+                  Foto Selfie dengan KTP
+                </h5>
+                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden mb-3">
+                  <img
+                    src={selectedUser.selfie_photo}
+                    alt="Selfie"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  onClick={() => window.open(selectedUser.selfie_photo, '_blank')}
+                >
+                  <EyeIcon className="h-4 w-4 mr-1" />
+                  Lihat Full
+                </Button>
+              </div>
+            )}
+
+            {/* Income Proof */}
+            {selectedUser?.income_proof && (
+              <div className="border border-gray-200 rounded-lg p-4">
+                <h5 className="font-medium text-gray-900 mb-2 flex items-center">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
+                  Bukti Penghasilan
+                </h5>
+                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
+                  {selectedUser.income_proof.endsWith('.pdf') ? (
+                    <div className="text-center">
+                      <svg className="h-16 w-16 mx-auto text-red-500 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                      </svg>
+                      <p className="text-sm text-gray-600">PDF Document</p>
+                    </div>
+                  ) : (
+                    <img
+                      src={selectedUser.income_proof}
+                      alt="Income Proof"
+                      className="w-full h-full object-contain"
+                    />
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  onClick={() => window.open(selectedUser.income_proof, '_blank')}
+                >
+                  <EyeIcon className="h-4 w-4 mr-1" />
+                  Lihat Full
+                </Button>
+              </div>
+            )}
+
+            {/* Reference Letter */}
+            {selectedUser?.reference_letter && (
+              <div className="border border-gray-200 rounded-lg p-4">
+                <h5 className="font-medium text-gray-900 mb-2 flex items-center">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
+                  Surat Referensi
+                </h5>
+                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
+                  {selectedUser.reference_letter.endsWith('.pdf') ? (
+                    <div className="text-center">
+                      <svg className="h-16 w-16 mx-auto text-red-500 mb-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                      </svg>
+                      <p className="text-sm text-gray-600">PDF Document</p>
+                    </div>
+                  ) : (
+                    <img
+                      src={selectedUser.reference_letter}
+                      alt="Reference"
+                      className="w-full h-full object-contain"
+                    />
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  fullWidth
+                  onClick={() => window.open(selectedUser.reference_letter, '_blank')}
+                >
+                  <EyeIcon className="h-4 w-4 mr-1" />
+                  Lihat Full
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* No Documents Message */}
+          {!selectedUser?.id_card_photo && !selectedUser?.selfie_photo && !selectedUser?.income_proof && !selectedUser?.reference_letter && (
+            <div className="text-center py-8">
+              <XCircleIcon className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+              <p className="text-gray-600">Belum ada dokumen yang diupload</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex space-x-3 pt-4 border-t">
+            <Button
+              variant="secondary"
+              onClick={() => setShowDocumentsModal(false)}
+              fullWidth
+            >
+              Tutup
+            </Button>
+            {!selectedUser?.document_verified_at && selectedUser?.id_card_photo && (
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setShowDocumentsModal(false);
+                  setShowVerifyModal(true);
+                }}
+                fullWidth
+              >
+                Verifikasi Dokumen
+              </Button>
+            )}
+          </div>
         </div>
       </Modal>
     </div>
