@@ -13,6 +13,7 @@ import {
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import apartmentsAPI from '../../api/apartments';
 import { useAuthStore } from '../../stores/authStore';
+import { useUserStore } from '../../stores/userStore';
 import ImageGallery from '../../components/apartment/ImageGallery';
 import FacilityList from '../../components/apartment/FacilityList';
 import Button from '../../components/common/Button';
@@ -27,10 +28,15 @@ const ApartmentDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
+  const { profile, fetchProfile } = useUserStore();
 
   useEffect(() => {
     fetchApartmentDetail();
-  }, [id]);
+    // Fetch profile if authenticated and is tenant
+    if (isAuthenticated && user?.role === 'tenant') {
+      fetchProfile();
+    }
+  }, [id, isAuthenticated, user]);
 
   const fetchApartmentDetail = async () => {
     setLoading(true);
@@ -76,6 +82,28 @@ const ApartmentDetail = () => {
 
     if (user?.role !== 'tenant') {
       toast.error('Hanya penyewa yang dapat melakukan booking');
+      return;
+    }
+
+    // Validasi dokumen wajib: KTP dan Selfie dengan KTP
+    if (!profile?.id_card_photo || !profile?.selfie_photo) {
+      toast.error(
+        'Anda harus melengkapi dokumen wajib (KTP dan Selfie dengan KTP) sebelum melakukan booking',
+        { duration: 5000 }
+      );
+      // Redirect ke halaman dokumen
+      setTimeout(() => {
+        navigate('/tenant/documents');
+      }, 1500);
+      return;
+    }
+
+    // Validasi dokumen harus sudah diverifikasi
+    if (!profile?.document_verified_at) {
+      toast.error(
+        'Dokumen Anda masih dalam proses verifikasi. Harap tunggu admin memverifikasi dokumen Anda terlebih dahulu',
+        { duration: 5000 }
+      );
       return;
     }
 

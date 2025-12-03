@@ -5,6 +5,7 @@ import { TagIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import apartmentsAPI from '../../api/apartments';
 import bookingsAPI from '../../api/bookings';
 import promotionsAPI from '../../api/promotions';
+import { useUserStore } from '../../stores/userStore';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import BookingSummary from '../../components/booking/BookingSummary';
@@ -14,6 +15,7 @@ import { calculateMonths } from '../../utils/helpers';
 const BookingForm = () => {
   const { apartmentId } = useParams();
   const navigate = useNavigate();
+  const { fetchProfile } = useUserStore();
   const [apartment, setApartment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -30,8 +32,46 @@ const BookingForm = () => {
   const [validatingPromo, setValidatingPromo] = useState(false);
 
   useEffect(() => {
-    fetchApartment();
+    checkDocumentsAndFetchApartment();
   }, [apartmentId]);
+
+  const checkDocumentsAndFetchApartment = async () => {
+    try {
+      // Fetch profile first to check documents
+      await fetchProfile();
+
+      // Validasi dokumen wajib
+      const currentProfile = await fetchProfile();
+      if (!currentProfile?.id_card_photo || !currentProfile?.selfie_photo) {
+        toast.error(
+          'Anda harus melengkapi dokumen wajib (KTP dan Selfie dengan KTP) sebelum melakukan booking',
+          { duration: 5000 }
+        );
+        setTimeout(() => {
+          navigate('/tenant/documents');
+        }, 1500);
+        return;
+      }
+
+      // Validasi dokumen harus sudah diverifikasi
+      if (!currentProfile?.document_verified_at) {
+        toast.error(
+          'Dokumen Anda masih dalam proses verifikasi. Harap tunggu admin memverifikasi dokumen Anda terlebih dahulu',
+          { duration: 5000 }
+        );
+        setTimeout(() => {
+          navigate('/tenant/documents');
+        }, 1500);
+        return;
+      }
+
+      // If documents are verified, fetch apartment
+      await fetchApartment();
+    } catch (error) {
+      toast.error('Gagal memuat data');
+      navigate('/apartments');
+    }
+  };
 
   useEffect(() => {
     if (formData.start_date && formData.end_date && apartment) {
