@@ -31,7 +31,6 @@ import FinancialReport from './pages/owner/FinancialReport'
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard'
 import UserManagement from './pages/admin/UserManagement'
-import BookingManagement from './pages/admin/BookingManagement'
 import PaymentVerification from './pages/admin/PaymentVerification'
 import PromotionManagement from './pages/admin/PromotionManagement'
 import Reports from './pages/admin/Reports'
@@ -164,11 +163,6 @@ function App() {
         <Route path="/admin/users" element={
           <RoleRoute allowedRoles={['admin']}>
             <UserManagement />
-          </RoleRoute>
-        } />
-        <Route path="/admin/bookings" element={
-          <RoleRoute allowedRoles={['admin']}>
-            <BookingManagement />
           </RoleRoute>
         } />
         <Route path="/admin/payments" element={

@@ -57,7 +57,6 @@ const DashboardLayout = () => {
     const roleSpecificItems = {
       admin: [
         { name: 'Kelola User', href: '/admin/users', icon: UsersIcon },
-        { name: 'Kelola Booking', href: '/admin/bookings', icon: CalendarIcon },
         { name: 'Verifikasi Pembayaran', href: '/admin/payments', icon: CreditCardIcon },
         { name: 'Kelola Promosi', href: '/admin/promotions', icon: TagIcon },
         { name: 'Laporan', href: '/admin/reports', icon: ChartBarIcon },

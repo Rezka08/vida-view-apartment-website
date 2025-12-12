@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, User
+from models import db, User, Apartment, Booking
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils import role_required, save_file, log_activity
 from datetime import datetime
@@ -280,20 +280,38 @@ def delete_user(user_id):
     """Delete user (Admin only)"""
     try:
         current_user_id = get_jwt_identity()
-        
+
         if user_id == current_user_id:
             return jsonify({'message': 'Cannot delete your own account'}), 400
-        
+
         user = User.query.get(user_id)
-        
+
         if not user:
             return jsonify({'message': 'User not found'}), 404
-        
+
+        # Check if owner has apartments
+        if user.role == 'owner':
+            apartment_count = Apartment.query.filter_by(owner_id=user_id).count()
+            if apartment_count > 0:
+                return jsonify({
+                    'message': f'Tidak dapat menghapus owner yang masih memiliki {apartment_count} unit apartemen. Silakan hapus atau transfer unit terlebih dahulu.'
+                }), 400
+
+        # Check if tenant has active bookings
+        if user.role == 'tenant':
+            active_bookings = Booking.query.filter_by(tenant_id=user_id).filter(
+                Booking.status.in_(['pending', 'confirmed', 'active'])
+            ).count()
+            if active_bookings > 0:
+                return jsonify({
+                    'message': f'Tidak dapat menghapus penyewa yang masih memiliki {active_bookings} booking aktif. Silakan selesaikan booking terlebih dahulu.'
+                }), 400
+
         old_data = user.to_dict()
-        
+
         db.session.delete(user)
         db.session.commit()
-        
+
         # Log activity
         log_activity(
             user_id=current_user_id,
@@ -302,11 +320,11 @@ def delete_user(user_id):
             entity_id=user_id,
             old_data=old_data
         )
-        
+
         return jsonify({
             'message': 'User deleted successfully'
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': str(e)}), 500

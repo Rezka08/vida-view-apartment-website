@@ -42,14 +42,14 @@ const Navbar = () => {
 
   const getDashboardLink = () => {
     if (!user) return '/';
-    
+
     switch (user.role) {
       case 'admin':
         return '/admin/dashboard';
       case 'owner':
         return '/owner/dashboard';
       case 'tenant':
-        return '/tenant/dashboard';
+        return '/dashboard';
       default:
         return '/';
     }

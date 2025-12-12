@@ -55,8 +55,8 @@ class User(db.Model):
             'address': self.address,
             'birth_date': self.birth_date.isoformat() if self.birth_date else None,
             'status': self.status,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'created_at': self.created_at.isoformat() + 'Z' if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() + 'Z' if self.updated_at else None
         }
         if include_sensitive:
             data.update({
@@ -65,8 +65,8 @@ class User(db.Model):
                 'selfie_photo': self.selfie_photo,
                 'income_proof': self.income_proof,
                 'reference_letter': self.reference_letter,
-                'email_verified_at': self.email_verified_at.isoformat() if self.email_verified_at else None,
-                'document_verified_at': self.document_verified_at.isoformat() if self.document_verified_at else None
+                'email_verified_at': self.email_verified_at.isoformat() + 'Z' if self.email_verified_at else None,
+                'document_verified_at': self.document_verified_at.isoformat() + 'Z' if self.document_verified_at else None
             })
         return data
 
@@ -130,11 +130,11 @@ class Apartment(db.Model):
             'smoking_allowed': self.smoking_allowed,
             'availability_status': self.availability_status,
             'is_archived': self.is_archived,
-            'archived_at': self.archived_at.isoformat() if self.archived_at else None,
+            'archived_at': self.archived_at.isoformat() + 'Z' if self.archived_at else None,
             'owner_id': self.owner_id,
             'total_views': self.total_views,
             'avg_rating': float(self.avg_rating) if self.avg_rating else 0,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() + 'Z' if self.created_at else None
         }
         
         if include_relations:
@@ -198,12 +198,12 @@ class Booking(db.Model):
             'rejection_reason': self.rejection_reason,
             'contract_file': self.contract_file,
             'notes': self.notes,
-            'approved_at': self.approved_at.isoformat() if self.approved_at else None,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'approved_at': self.approved_at.isoformat() + 'Z' if self.approved_at else None,
+            'created_at': self.created_at.isoformat() + 'Z' if self.created_at else None
         }
         
         if include_relations:
-            data['apartment'] = self.apartment.to_dict() if self.apartment else None
+            data['apartment'] = self.apartment.to_dict(include_relations=True) if self.apartment else None
             data['tenant'] = self.tenant.to_dict() if self.tenant else None
             data['payments'] = [payment.to_dict() for payment in self.payments]
             data['promotion'] = self.promotion.to_dict() if self.promotion else None
@@ -239,12 +239,12 @@ class Payment(db.Model):
             'amount': float(self.amount),
             'payment_method': self.payment_method,
             'payment_status': self.payment_status,
-            'payment_date': self.payment_date.isoformat() if self.payment_date else None,
+            'payment_date': self.payment_date.isoformat() + 'Z' if self.payment_date else None,
             'due_date': self.due_date.isoformat() if self.due_date else None,
             'transaction_id': self.transaction_id,
             'receipt_file': self.receipt_file,
             'notes': self.notes,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() + 'Z' if self.created_at else None
         }
 
         if include_relations and self.booking:
@@ -360,7 +360,7 @@ class Review(db.Model):
             'review_text': self.review_text,
             'photos': self.photos,
             'is_approved': self.is_approved,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_at': self.created_at.isoformat() + 'Z' if self.created_at else None,
             'tenant': self.reviewer.to_dict() if self.reviewer else None
         }
 
@@ -377,7 +377,7 @@ class Favorite(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'apartment_id': self.apartment_id,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() + 'Z' if self.created_at else None
         }
 
 class Notification(db.Model):
@@ -402,7 +402,7 @@ class Notification(db.Model):
             'type': self.type,
             'related_id': self.related_id,
             'is_read': self.is_read,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() + 'Z' if self.created_at else None
         }
 
 class Promotion(db.Model):
