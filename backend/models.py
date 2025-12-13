@@ -33,7 +33,6 @@ class User(db.Model):
     # Relationships
     owned_apartments = db.relationship('Apartment', backref='owner', lazy=True, foreign_keys='Apartment.owner_id')
     bookings = db.relationship('Booking', backref='tenant', lazy=True, foreign_keys='Booking.tenant_id')
-    reviews = db.relationship('Review', backref='reviewer', lazy=True, foreign_keys='Review.tenant_id')
     favorites = db.relationship('Favorite', backref='user', lazy=True, cascade='all, delete-orphan')
     notifications = db.relationship('Notification', backref='user', lazy=True, cascade='all, delete-orphan')
     
@@ -106,7 +105,6 @@ class Apartment(db.Model):
     photos = db.relationship('UnitPhoto', backref='apartment', lazy=True, cascade='all, delete-orphan')
     facilities = db.relationship('ApartmentFacility', backref='apartment', lazy=True, cascade='all, delete-orphan')
     bookings = db.relationship('Booking', backref='apartment', lazy=True)
-    reviews = db.relationship('Review', backref='apartment', lazy=True)
     favorites = db.relationship('Favorite', backref='apartment', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self, include_relations=False):
@@ -334,35 +332,6 @@ class ApartmentFacility(db.Model):
     
     # Relationships
     facility = db.relationship('Facility', backref='apartment_facilities')
-
-class Review(db.Model):
-    __tablename__ = 'reviews'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    apartment_id = db.Column(db.Integer, db.ForeignKey('apartments.id'), nullable=False)
-    tenant_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
-    review_text = db.Column(db.Text)
-    photos = db.Column(db.JSON)
-    is_approved = db.Column(db.Boolean, default=False)
-    approved_by = db.Column(db.Integer, db.ForeignKey('users.id'))
-    approved_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'apartment_id': self.apartment_id,
-            'tenant_id': self.tenant_id,
-            'booking_id': self.booking_id,
-            'rating': self.rating,
-            'review_text': self.review_text,
-            'photos': self.photos,
-            'is_approved': self.is_approved,
-            'created_at': self.created_at.isoformat() + 'Z' if self.created_at else None,
-            'tenant': self.reviewer.to_dict() if self.reviewer else None
-        }
 
 class Favorite(db.Model):
     __tablename__ = 'favorites'
