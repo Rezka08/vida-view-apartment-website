@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { XMarkIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import { toast } from 'react-hot-toast';
 import axios from '../../api/axios';
+import facilitiesAPI from '../../api/facilities';
 
 const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
@@ -17,11 +18,15 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
     description: '',
     floor: '',
     furnished: true,
-    facilities: [],
+    facility_ids: [],
   });
 
   const [errors, setErrors] = useState({});
   const [photos, setPhotos] = useState([]);
+  const [availableFacilities, setAvailableFacilities] = useState([]);
+  const [loadingFacilities, setLoadingFacilities] = useState(false);
+  const [customFacilityName, setCustomFacilityName] = useState('');
+  const [customFacilities, setCustomFacilities] = useState([]); // Array of custom facility names
 
   const apartmentTypes = [
     { value: '1BR', label: '1 Bedroom', bedrooms: 1, bathrooms: 1 },
@@ -29,16 +34,49 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
     { value: '3BR', label: '3 Bedroom', bedrooms: 3, bathrooms: 2 },
   ];
 
+  // Fetch facilities and reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // Reset form to initial state
+      setFormData({
+        name: '',
+        type: '1BR',
+        monthly_rent: '',
+        deposit: '',
+        availability_status: 'available',
+        description: '',
+        floor: '',
+        furnished: true,
+        facility_ids: [],
+      });
+      setPhotos([]);
+      setErrors({});
+      setCustomFacilityName('');
+      setCustomFacilities([]);
+
+      // Fetch facilities
+      fetchFacilities();
+    }
+  }, [isOpen]);
+
+  const fetchFacilities = async () => {
+    setLoadingFacilities(true);
+    try {
+      const response = await facilitiesAPI.getFacilities({ category: 'unit', status: 'active' });
+      setAvailableFacilities(response.facilities || []);
+    } catch (error) {
+      console.error('Error fetching facilities:', error);
+      toast.error('Gagal memuat fasilitas');
+    } finally {
+      setLoadingFacilities(false);
+    }
+  };
+
   // Get bedrooms and bathrooms based on selected type
   const getUnitSpecs = (type) => {
     const selectedType = apartmentTypes.find(t => t.value === type);
     return selectedType || { bedrooms: 1, bathrooms: 1 };
   };
-
-  const availableFacilities = [
-    'AC', 'Wi-Fi', 'TV', 'Kulkas', 'Mesin Cuci', 'Water Heater',
-    'Kitchen Set', 'Balkon', 'Parkir', 'Security 24/7'
-  ];
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -52,13 +90,42 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
     }
   };
 
-  const handleFacilityToggle = (facility) => {
+  const handleFacilityToggle = (facilityId) => {
     setFormData(prev => ({
       ...prev,
-      facilities: prev.facilities.includes(facility)
-        ? prev.facilities.filter(f => f !== facility)
-        : [...prev.facilities, facility]
+      facility_ids: prev.facility_ids.includes(facilityId)
+        ? prev.facility_ids.filter(id => id !== facilityId)
+        : [...prev.facility_ids, facilityId]
     }));
+  };
+
+  const handleAddCustomFacility = () => {
+    const trimmedName = customFacilityName.trim();
+
+    if (!trimmedName) {
+      toast.error('Nama fasilitas tidak boleh kosong');
+      return;
+    }
+
+    if (trimmedName.length > 50) {
+      toast.error('Nama fasilitas maksimal 50 karakter');
+      return;
+    }
+
+    // Check for duplicates in custom facilities
+    if (customFacilities.some(f => f.toLowerCase() === trimmedName.toLowerCase())) {
+      toast.error('Fasilitas custom sudah ditambahkan');
+      return;
+    }
+
+    // Add to local state (not database yet)
+    setCustomFacilities(prev => [...prev, trimmedName]);
+    setCustomFacilityName('');
+    toast.success('Fasilitas custom ditambahkan ke daftar');
+  };
+
+  const removeCustomFacility = (index) => {
+    setCustomFacilities(prev => prev.filter((_, i) => i !== index));
   };
 
   const handlePhotoChange = (e) => {
@@ -101,7 +168,23 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
       // Get bedrooms and bathrooms based on selected type
       const specs = getUnitSpecs(formData.type);
 
-      // Step 1: Create apartment with JSON data
+      // Step 1: Create custom facilities if any
+      const customFacilityIds = [];
+      if (customFacilities.length > 0) {
+        for (const facilityName of customFacilities) {
+          try {
+            const response = await facilitiesAPI.createCustomFacility(facilityName);
+            customFacilityIds.push(response.facility.id);
+          } catch (error) {
+            console.error(`Error creating custom facility "${facilityName}":`, error);
+            // Continue with other facilities even if one fails
+          }
+        }
+      }
+
+      // Step 2: Create apartment with JSON data (combine standard and custom facility IDs)
+      const allFacilityIds = [...formData.facility_ids, ...customFacilityIds];
+
       const apartmentData = {
         unit_number: formData.name,
         unit_type: formData.type,
@@ -113,12 +196,13 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
         description: formData.description,
         furnished: formData.furnished,
         availability_status: formData.availability_status,
+        facility_ids: allFacilityIds,
       };
 
       const response = await axios.post('/apartments', apartmentData);
       const newApartment = response.data.apartment;
 
-      // Step 2: Upload photos if any
+      // Step 3: Upload photos if any
       if (photos.length > 0) {
         for (let i = 0; i < photos.length; i++) {
           const photoData = new FormData();
@@ -145,6 +229,8 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   const handleClose = () => {
+    // Reset akan dilakukan di useEffect saat modal dibuka lagi
+    // Tapi tetap reset untuk memastikan konsistensi
     setFormData({
       name: '',
       type: '1BR',
@@ -154,10 +240,12 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
       description: '',
       floor: '',
       furnished: true,
-      facilities: [],
+      facility_ids: [],
     });
     setPhotos([]);
     setErrors({});
+    setCustomFacilityName('');
+    setCustomFacilities([]);
     onClose();
   };
 
@@ -267,24 +355,89 @@ const AddUnitModal = ({ isOpen, onClose, onSuccess }) => {
           {/* Facilities - Compact Grid */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Fasilitas
+              Fasilitas Standar
             </label>
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-              {availableFacilities.map(facility => (
-                <label
-                  key={facility}
-                  className="flex items-center space-x-1 text-xs cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.facilities.includes(facility)}
-                    onChange={() => handleFacilityToggle(facility)}
-                    className="rounded text-purple-600 focus:ring-purple-500"
-                  />
-                  <span>{facility}</span>
-                </label>
-              ))}
-            </div>
+            {loadingFacilities ? (
+              <p className="text-sm text-gray-500">Memuat fasilitas...</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+                  {availableFacilities.map(facility => (
+                    <label
+                      key={facility.id}
+                      className="flex items-center space-x-2 text-xs cursor-pointer p-2 rounded hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.facility_ids.includes(facility.id)}
+                        onChange={() => handleFacilityToggle(facility.id)}
+                        className="rounded text-purple-600 focus:ring-purple-500"
+                      />
+                      <span>{facility.name}</span>
+                    </label>
+                  ))}
+                </div>
+
+                {/* Add Custom Facility */}
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p className="text-xs text-gray-600 mb-2">
+                    Tambahkan fasilitas custom (akan dibuat saat unit disimpan)
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={customFacilityName}
+                      onChange={(e) => setCustomFacilityName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCustomFacility();
+                        }
+                      }}
+                      placeholder="Contoh: Balkon, Smart Lock, dll"
+                      maxLength={50}
+                      className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddCustomFacility}
+                      disabled={!customFacilityName.trim()}
+                    >
+                      Tambah
+                    </Button>
+                  </div>
+
+                  {/* Display Custom Facilities */}
+                  {customFacilities.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-gray-600 font-medium">Fasilitas Custom yang Ditambahkan:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {customFacilities.map((facility, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center space-x-1 bg-purple-100 text-purple-700 px-2 py-1 rounded-md text-xs"
+                          >
+                            <span>{facility}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeCustomFacility(index)}
+                              className="text-purple-600 hover:text-purple-800"
+                            >
+                              <XMarkIcon className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+            {!loadingFacilities && availableFacilities.length === 0 && (
+              <p className="text-sm text-gray-500">Belum ada fasilitas yang tersedia</p>
+            )}
           </div>
 
           {/* Furnished Checkbox */}

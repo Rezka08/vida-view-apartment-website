@@ -289,33 +289,6 @@ const ApartmentDetail = () => {
                 <FacilityList facilities={apartment.facilities} />
               </div>
             )}
-
-            {/* Reviews */}
-            {apartment.reviews && apartment.reviews.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4">Ulasan Penyewa</h2>
-                <div className="space-y-4">
-                  {apartment.reviews.map((review) => (
-                    <div key={review.id} className="border-b pb-4 last:border-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <p className="font-medium">{review.tenant?.full_name}</p>
-                          <div className="flex items-center mt-1">
-                            {[...Array(review.rating)].map((_, i) => (
-                              <span key={i} className="text-yellow-400">★</span>
-                            ))}
-                          </div>
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          {new Date(review.created_at).toLocaleDateString('id-ID')}
-                        </span>
-                      </div>
-                      <p className="text-gray-600">{review.review_text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Sidebar */}

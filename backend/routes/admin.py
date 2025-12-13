@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, User, Apartment, Booking, Payment, Review
+from models import db, User, Apartment, Booking, Payment
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils import role_required
 from sqlalchemy import func, and_, extract

@@ -26,7 +26,6 @@ def create_app(config_name='development'):
     from routes.bookings import bookings_bp
     from routes.payments import payments_bp
     from routes.users import users_bp
-    from routes.reviews import reviews_bp
     from routes.facilities import facilities_bp
     from routes.notifications import notifications_bp
     from routes.admin import admin_bp
@@ -37,7 +36,6 @@ def create_app(config_name='development'):
     app.register_blueprint(bookings_bp)
     app.register_blueprint(payments_bp)
     app.register_blueprint(users_bp)
-    app.register_blueprint(reviews_bp)
     app.register_blueprint(facilities_bp)
     app.register_blueprint(notifications_bp)
     app.register_blueprint(admin_bp)
