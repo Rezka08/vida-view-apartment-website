@@ -5,12 +5,12 @@ import Badge from '../common/Badge';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { getStatusText } from '../../utils/helpers';
 
-const BookingCard = ({ booking, onViewDetail }) => {
+const BookingCard = ({ booking, onViewDetail, actionButton }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <Link 
+          <Link
             to={`/apartments/${booking.apartment_id}`}
             className="text-lg font-semibold text-gray-900 hover:text-purple-600"
           >
@@ -53,12 +53,15 @@ const BookingCard = ({ booking, onViewDetail }) => {
         <span className="text-sm text-gray-500">
           {booking.total_months} bulan • {formatCurrency(booking.monthly_rent)}/bulan
         </span>
-        <button
-          onClick={() => onViewDetail && onViewDetail(booking)}
-          className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-        >
-          Lihat Detail →
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => onViewDetail && onViewDetail(booking)}
+            className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+          >
+            Lihat Detail →
+          </button>
+          {actionButton && actionButton}
+        </div>
       </div>
     </div>
   );

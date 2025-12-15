@@ -249,6 +249,8 @@ class Payment(db.Model):
             data['booking'] = {
                 'id': self.booking.id,
                 'booking_code': self.booking.booking_code,
+                'status': self.booking.status,
+                'rejection_reason': self.booking.rejection_reason,
                 'start_date': self.booking.start_date.isoformat() if self.booking.start_date else None,
                 'end_date': self.booking.end_date.isoformat() if self.booking.end_date else None,
                 'total_months': self.booking.total_months,
@@ -303,15 +305,16 @@ class UnitPhoto(db.Model):
 
 class Facility(db.Model):
     __tablename__ = 'facilities'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     icon = db.Column(db.String(100))
     category = db.Column(db.Enum('building', 'unit', 'area'), default='building')
     status = db.Column(db.Enum('active', 'inactive'), default='active')
+    is_custom = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -319,7 +322,8 @@ class Facility(db.Model):
             'description': self.description,
             'icon': self.icon,
             'category': self.category,
-            'status': self.status
+            'status': self.status,
+            'is_custom': self.is_custom
         }
 
 class ApartmentFacility(db.Model):

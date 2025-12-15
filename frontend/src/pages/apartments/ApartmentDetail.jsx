@@ -36,24 +36,36 @@ const ApartmentDetail = () => {
     if (isAuthenticated && user?.role === 'tenant') {
       fetchProfile();
     }
-  }, [id, isAuthenticated, user]);
+  }, [id]);
+
+  useEffect(() => {
+    checkIfFavorited();
+  }, [id, isAuthenticated]);
 
   const fetchApartmentDetail = async () => {
     setLoading(true);
     try {
       const data = await apartmentsAPI.getApartment(id);
       setApartment(data);
-      
-      // Check if favorited
-      if (isAuthenticated) {
-        const favResponse = await apartmentsAPI.getFavorites();
-        setIsFavorite(favResponse.favorites.some(fav => fav.apartment_id === parseInt(id)));
-      }
     } catch (error) {
       toast.error('Gagal memuat detail apartemen');
       console.error('Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkIfFavorited = async () => {
+    if (!isAuthenticated) {
+      setIsFavorite(false);
+      return;
+    }
+
+    try {
+      const favResponse = await apartmentsAPI.getFavorites();
+      setIsFavorite(favResponse.favorites.some(fav => fav.apartment_id === parseInt(id)));
+    } catch (error) {
+      console.error('Error checking favorites:', error);
     }
   };
 
@@ -65,11 +77,20 @@ const ApartmentDetail = () => {
     }
 
     try {
+      const isCurrentlyFavorite = isFavorite;
+
       await apartmentsAPI.toggleFavorite(id);
-      setIsFavorite(!isFavorite);
-      toast.success(isFavorite ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit');
+
+      setIsFavorite(!isCurrentlyFavorite);
+
+      toast.success(
+        isCurrentlyFavorite
+          ? 'Dihapus dari favorit'
+          : 'Ditambahkan ke favorit'
+      );
     } catch (error) {
       toast.error('Gagal mengubah favorit');
+      console.error('Error toggling favorite:', error);
     }
   };
 
@@ -273,7 +294,7 @@ const ApartmentDetail = () => {
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Minimum Sewa</span>
-                  <span className="font-medium">{apartment.minimum_stay_months} Bulan</span>
+                  <span className="font-medium">{apartment.minimum_stay_months} Bulan ({apartment.minimum_stay_months * 30} hari)</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Deposit</span>

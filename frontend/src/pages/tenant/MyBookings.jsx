@@ -90,10 +90,12 @@ const MyBookings = () => {
       {bookings.length > 0 ? (
         <div className="space-y-4">
           {bookings.map((booking) => (
-            <div key={booking.id} className="relative">
-              <BookingCard booking={booking} onViewDetail={handleViewDetail} />
-              {booking.status === 'pending' && (
-                <div className="absolute top-4 right-4">
+            <BookingCard
+              key={booking.id}
+              booking={booking}
+              onViewDetail={handleViewDetail}
+              actionButton={
+                booking.status === 'pending' && (
                   <Button
                     variant="danger"
                     size="sm"
@@ -104,9 +106,9 @@ const MyBookings = () => {
                   >
                     Batalkan
                   </Button>
-                </div>
-              )}
-            </div>
+                )
+              }
+            />
           ))}
         </div>
       ) : (

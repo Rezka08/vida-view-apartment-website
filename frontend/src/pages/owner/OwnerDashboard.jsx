@@ -85,7 +85,7 @@ const OwnerDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link to="/owner/apartments" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-center">
+        <Link to="/owner/units" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-center">
           <BuildingOfficeIcon className="h-12 w-12 mx-auto text-purple-600 mb-3" />
           <h3 className="font-semibold text-gray-900 mb-1">Kelola Unit</h3>
           <p className="text-sm text-gray-500">Manage your units</p>
@@ -95,7 +95,7 @@ const OwnerDashboard = () => {
           <h3 className="font-semibold text-gray-900 mb-1">Booking</h3>
           <p className="text-sm text-gray-500">View all bookings</p>
         </Link>
-        <Link to="/owner/reports" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-center">
+        <Link to="/owner/financial" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-center">
           <ChartBarIcon className="h-12 w-12 mx-auto text-purple-600 mb-3" />
           <h3 className="font-semibold text-gray-900 mb-1">Laporan Keuangan</h3>
           <p className="text-sm text-gray-500">Financial reports</p>

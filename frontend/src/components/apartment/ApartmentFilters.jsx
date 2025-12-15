@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
-import { 
-  MagnifyingGlassIcon, 
+import {
+  MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
-  XMarkIcon 
+  XMarkIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline';
 import Button from '../common/Button';
+import { useAuthStore } from '../../stores/authStore';
 
 const ApartmentFilters = ({ onFilterChange, onSearch }) => {
   const [showFilters, setShowFilters] = useState(false);
+  const { isAuthenticated } = useAuthStore();
   const [filters, setFilters] = useState({
     search: '',
     unit_type: '',
     min_price: '',
     max_price: '',
     bedrooms: '',
-    furnished: '',
-    status: 'available'
+    favorites_only: false
   });
 
-  const unitTypes = ['Studio', '1BR', '2BR', '3BR', 'Penthouse'];
-  const bedroomOptions = [1, 2, 3, 4];
+  const unitTypes = ['1BR', '2BR', '3BR'];
+  const bedroomOptions = [1, 2, 3];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,11 +48,16 @@ const ApartmentFilters = ({ onFilterChange, onSearch }) => {
       min_price: '',
       max_price: '',
       bedrooms: '',
-      furnished: '',
-      status: 'available'
+      favorites_only: false
     };
     setFilters(clearedFilters);
     onFilterChange && onFilterChange(clearedFilters);
+  };
+
+  const handleFavoritesToggle = () => {
+    const newFilters = { ...filters, favorites_only: !filters.favorites_only };
+    setFilters(newFilters);
+    onFilterChange && onFilterChange(newFilters);
   };
 
   const handleKeyPress = (e) => {
@@ -77,6 +84,13 @@ const ApartmentFilters = ({ onFilterChange, onSearch }) => {
         </div>
         <Button onClick={handleSearch}>
           Cari
+        </Button>
+        <Button
+          variant={filters.favorites_only ? "primary" : "outline"}
+          onClick={handleFavoritesToggle}
+          title="Filter Favorit"
+        >
+          <HeartIcon className={`h-5 w-5 ${filters.favorites_only ? 'fill-current' : ''}`} />
         </Button>
         <Button
           variant="outline"
@@ -154,40 +168,6 @@ const ApartmentFilters = ({ onFilterChange, onSearch }) => {
                 placeholder="Max. harga"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
-            </div>
-
-            {/* Furnished */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Furnished
-              </label>
-              <select
-                name="furnished"
-                value={filters.furnished}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="">Semua</option>
-                <option value="true">Ya</option>
-                <option value="false">Tidak</option>
-              </select>
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
-              <select
-                name="status"
-                value={filters.status}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-                <option value="">Semua Status</option>
-                <option value="available">Tersedia</option>
-                <option value="occupied">Terisi</option>
-              </select>
             </div>
           </div>
 

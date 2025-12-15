@@ -128,10 +128,10 @@ def create_booking():
         
         # Calculate months and amounts
         total_months = calculate_months_between(start_date, end_date)
-        
+
         if total_months < apartment.minimum_stay_months:
             return jsonify({
-                'message': f'Minimum stay is {apartment.minimum_stay_months} months'
+                'message': f'Minimum stay is {apartment.minimum_stay_months} months ({apartment.minimum_stay_months * 30} days)'
             }), 400
         
         monthly_rent = apartment.price_per_month
@@ -309,15 +309,20 @@ def reject_booking(booking_id):
         
         if booking.status != 'pending':
             return jsonify({'message': f'Booking is already {booking.status}'}), 400
-        
+
         # Update booking status
         booking.status = 'rejected'
         booking.rejection_reason = data.get('reason', 'No reason provided')
         booking.approved_by = current_user_id
         booking.approved_at = datetime.utcnow()
-        
+
+        for payment in booking.payments:
+            if payment.payment_status in ['pending', 'verifying']:
+                payment.payment_status = 'failed'
+                payment.notes = f'Pembayaran dibatalkan karena booking ditolak. Alasan: {booking.rejection_reason}'
+
         db.session.commit()
-        
+
         # Create notification for tenant
         create_notification(
             user_id=booking.tenant_id,
@@ -366,11 +371,17 @@ def cancel_booking(booking_id):
         
         if booking.status not in ['pending', 'confirmed']:
             return jsonify({'message': f'Cannot cancel booking with status: {booking.status}'}), 400
-        
+
         # Update booking status
         booking.status = 'cancelled'
+
+        for payment in booking.payments:
+            if payment.payment_status in ['pending', 'verifying']:
+                payment.payment_status = 'failed'
+                payment.notes = 'Pembayaran dibatalkan karena booking dibatalkan'
+
         db.session.commit()
-        
+
         # Create notification
         if user.role == 'tenant':
             # Notify owner

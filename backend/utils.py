@@ -120,8 +120,12 @@ def format_currency(amount):
     return f"Rp {amount:,.0f}".replace(',', '.')
 
 def calculate_months_between(start_date, end_date):
-    """Calculate number of months between two dates"""
-    return (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
+    """Calculate number of months between two dates based on actual days (1 month = 30 days)"""
+    # Calculate difference in days
+    diff_days = (end_date - start_date).days
+
+    # Calculate months (1 month = 30 days)
+    return diff_days // 30
 
 def get_current_user():
     """Get current authenticated user"""

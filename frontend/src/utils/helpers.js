@@ -43,17 +43,23 @@ export const getStatusText = (status, type = 'booking') => {
 };
 
 /**
- * Calculate months between two dates
+ * Calculate months between two dates based on actual days
  * @param {Date|string} startDate - Start date
  * @param {Date|string} endDate - End date
- * @returns {number} Number of months
+ * @returns {number} Number of months (1 month = 30 days)
  */
 export const calculateMonths = (startDate, endDate) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
-  return (end.getFullYear() - start.getFullYear()) * 12 + 
-         (end.getMonth() - start.getMonth());
+
+  // Calculate difference in milliseconds
+  const diffTime = end - start;
+
+  // Convert to days
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // Calculate months (1 month = 30 days)
+  return Math.floor(diffDays / 30);
 };
 
 /**

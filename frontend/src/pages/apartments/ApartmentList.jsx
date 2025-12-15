@@ -26,18 +26,45 @@ const ApartmentList = () => {
   const fetchApartments = async (filters = {}) => {
     setLoading(true);
     try {
-      const params = {
-        page: pagination.page,
-        per_page: pagination.per_page,
-        ...filters
-      };
+      // Handle favorites_only filter
+      if (filters.favorites_only) {
+        if (!isAuthenticated) {
+          toast.error('Silakan login untuk melihat favorit');
+          setApartments([]);
+          setPagination({ page: 1, per_page: pagination.per_page, total: 0, pages: 0 });
+          setLoading(false);
+          return;
+        }
 
-      const response = await apartmentsAPI.getApartments(params);
-      setApartments(response.apartments);
-      setPagination(response.pagination);
+        // Fetch favorites
+        const favResponse = await apartmentsAPI.getFavorites();
+        const favoriteApartments = favResponse.favorites
+          .map(fav => fav.apartment)
+          .filter(apt => apt != null); // Filter out null apartments
+
+        setApartments(favoriteApartments);
+        setPagination({
+          page: 1,
+          per_page: pagination.per_page,
+          total: favoriteApartments.length,
+          pages: 1
+        });
+      } else {
+        const params = {
+          page: pagination.page,
+          per_page: pagination.per_page,
+          ...filters,
+          favorites_only: undefined // Remove this from API call
+        };
+
+        const response = await apartmentsAPI.getApartments(params);
+        setApartments(response.apartments);
+        setPagination(response.pagination);
+      }
     } catch (error) {
       toast.error('Gagal memuat data apartemen');
       console.error('Error fetching apartments:', error);
+      setApartments([]);
     } finally {
       setLoading(false);
     }
@@ -56,8 +83,11 @@ const ApartmentList = () => {
   };
 
   useEffect(() => {
-    fetchApartments();
     fetchFavorites();
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    fetchApartments();
   }, [pagination.page]);
 
   // Handle filter change
@@ -80,23 +110,28 @@ const ApartmentList = () => {
     }
 
     try {
+      const isCurrentlyFavorite = favorites.includes(apartmentId);
+
       await apartmentsAPI.toggleFavorite(apartmentId);
-      
+
+      // Update state
       setFavorites(prev => {
-        if (prev.includes(apartmentId)) {
+        if (isCurrentlyFavorite) {
           return prev.filter(id => id !== apartmentId);
         } else {
           return [...prev, apartmentId];
         }
       });
 
+      // Show correct message
       toast.success(
-        favorites.includes(apartmentId)
+        isCurrentlyFavorite
           ? 'Dihapus dari favorit'
           : 'Ditambahkan ke favorit'
       );
     } catch (error) {
       toast.error('Gagal mengubah favorit');
+      console.error('Error toggling favorite:', error);
     }
   };
 

@@ -11,21 +11,27 @@ def get_facilities():
     try:
         category = request.args.get('category')
         status = request.args.get('status', 'active')
-        
+        is_custom = request.args.get('is_custom')
+
         query = Facility.query
-        
+
         if category:
             query = query.filter_by(category=category)
-        
+
         if status:
             query = query.filter_by(status=status)
-        
+
+        # Filter by is_custom if provided
+        if is_custom is not None:
+            is_custom_bool = is_custom.lower() in ['true', '1', 'yes']
+            query = query.filter_by(is_custom=is_custom_bool)
+
         facilities = query.all()
-        
+
         return jsonify({
             'facilities': [facility.to_dict() for facility in facilities]
         }), 200
-        
+
     except Exception as e:
         return jsonify({'message': str(e)}), 500
 
@@ -184,7 +190,8 @@ def create_custom_facility():
             description=data.get('description', f'Custom facility'),
             icon=data.get('icon', 'star'),
             category='unit',
-            status='active'
+            status='active',
+            is_custom=True
         )
 
         db.session.add(facility)

@@ -479,7 +479,338 @@ export const exportReportExcel = (occupancyData, revenueData, topApartments, sel
   XLSX.writeFile(workbook, fileName);
 };
 
+// ===== OWNER FINANCIAL REPORT EXPORTS =====
+
+export const exportOwnerFinancialPDF = async (reportData, revenueChart, occupancyData, selectedYear) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+
+  // Colors
+  const primaryColor = [147, 51, 234]; // Purple
+  const darkColor = [31, 41, 55];
+  const lightColor = [156, 163, 175];
+  const greenColor = [34, 197, 94];
+  const blueColor = [59, 130, 246];
+
+  let currentY = 20;
+  const leftMargin = 20;
+  const rightMargin = pageWidth - 20;
+
+  // ===== HEADER =====
+  try {
+    const logoImg = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = '/logo_full.png';
+    });
+    doc.addImage(logoImg, 'PNG', leftMargin, currentY, 50, 15);
+  } catch (error) {
+    console.warn('Failed to load logo, using text fallback');
+    doc.setFontSize(22);
+    doc.setTextColor(...primaryColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text('VIDA VIEW', leftMargin, currentY + 6);
+
+    doc.setFontSize(10);
+    doc.setTextColor(...lightColor);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Premium Apartment Living', leftMargin, currentY + 13);
+  }
+
+  // Report Title
+  doc.setFontSize(20);
+  doc.setTextColor(...darkColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('LAPORAN KEUANGAN OWNER', rightMargin, currentY + 8, { align: 'right' });
+
+  doc.setFontSize(9);
+  doc.setTextColor(...lightColor);
+  doc.setFont('helvetica', 'normal');
+  const currentDate = new Date().toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+  doc.text(`Tanggal: ${currentDate}`, rightMargin, currentY + 14, { align: 'right' });
+  doc.text(`Periode: ${selectedYear}`, rightMargin, currentY + 19, { align: 'right' });
+
+  currentY += 30;
+
+  // Divider
+  doc.setDrawColor(...primaryColor);
+  doc.setLineWidth(0.5);
+  doc.line(leftMargin, currentY, rightMargin, currentY);
+
+  currentY += 15;
+
+  // ===== SUMMARY SECTION =====
+  doc.setFontSize(14);
+  doc.setTextColor(...darkColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RINGKASAN KEUANGAN', leftMargin, currentY);
+
+  currentY += 10;
+
+  // Summary Cards
+  const cardWidth = (pageWidth - 50) / 3;
+  const cardData = [
+    { label: 'Pendapatan Bulan Ini', value: formatCurrency(reportData?.monthlyRevenue || 0), color: primaryColor },
+    { label: 'Pendapatan Tahun Ini', value: formatCurrency(reportData?.totalRevenue || 0), color: greenColor },
+    { label: 'Rata-rata Bulanan', value: formatCurrency((reportData?.totalRevenue || 0) / 12), color: blueColor }
+  ];
+
+  cardData.forEach((card, index) => {
+    const x = leftMargin + (index * (cardWidth + 5));
+
+    // Card background
+    doc.setFillColor(card.color[0], card.color[1], card.color[2], 0.1);
+    doc.roundedRect(x, currentY, cardWidth, 18, 2, 2, 'F');
+
+    // Label
+    doc.setFontSize(7);
+    doc.setTextColor(...lightColor);
+    doc.setFont('helvetica', 'normal');
+    doc.text(card.label, x + cardWidth / 2, currentY + 5, { align: 'center' });
+
+    // Value
+    doc.setFontSize(10);
+    doc.setTextColor(...card.color);
+    doc.setFont('helvetica', 'bold');
+    doc.text(String(card.value), x + cardWidth / 2, currentY + 13, { align: 'center' });
+  });
+
+  currentY += 28;
+
+  // ===== OCCUPANCY SUMMARY =====
+  if (occupancyData) {
+    doc.setFontSize(11);
+    doc.setTextColor(...darkColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Status Okupansi', leftMargin, currentY);
+
+    currentY += 5;
+
+    const occupancyTableData = [[
+      occupancyData.summary?.total || 0,
+      occupancyData.summary?.occupied || 0,
+      occupancyData.summary?.available || 0,
+      `${occupancyData.summary?.occupancy_rate || 0}%`
+    ]];
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Total Unit', 'Terisi', 'Tersedia', 'Okupansi']],
+      body: occupancyTableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: primaryColor,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9
+      },
+      bodyStyles: {
+        fontSize: 9,
+        halign: 'center'
+      },
+      margin: { left: leftMargin, right: 20 }
+    });
+
+    currentY = doc.lastAutoTable.finalY + 15;
+  }
+
+  // ===== MONTHLY BREAKDOWN =====
+  if (revenueChart && revenueChart.length > 0) {
+    doc.setFontSize(11);
+    doc.setTextColor(...darkColor);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Pendapatan Bulanan ${selectedYear}`, leftMargin, currentY);
+
+    currentY += 5;
+
+    const monthlyTableData = revenueChart.map((month, index) => {
+      const prevValue = index > 0 ? revenueChart[index - 1].value : month.value;
+      const growthRate = prevValue > 0 ? ((month.value - prevValue) / prevValue * 100).toFixed(1) : 0;
+
+      return [
+        month.label,
+        formatCurrency(month.value),
+        `${growthRate >= 0 ? '+' : ''}${growthRate}%`,
+        month.value > 0 ? 'Active' : 'No Data'
+      ];
+    });
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Bulan', 'Pendapatan', 'Growth', 'Status']],
+      body: monthlyTableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: primaryColor,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      columnStyles: {
+        1: { halign: 'right' },
+        2: { halign: 'center' },
+        3: { halign: 'center' }
+      },
+      margin: { left: leftMargin, right: 20 }
+    });
+
+    currentY = doc.lastAutoTable.finalY + 10;
+
+    // Total Row
+    doc.setFillColor(...primaryColor);
+    doc.roundedRect(leftMargin, currentY, pageWidth - 40, 12, 2, 2, 'F');
+
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Total Pendapatan:', leftMargin + 5, currentY + 8);
+    doc.text(formatCurrency(reportData?.totalRevenue || 0), rightMargin - 5, currentY + 8, { align: 'right' });
+
+    currentY += 20;
+  }
+
+  // ===== FOOTER =====
+  const footerY = pageHeight - 30;
+
+  doc.setFontSize(10);
+  doc.setTextColor(...primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('VIDA VIEW - Premium Apartment Living', pageWidth / 2, footerY, { align: 'center' });
+
+  doc.setFontSize(8);
+  doc.setTextColor(...lightColor);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Jl. Topaz Raya Masale, Panakkukang Kota Makassar, Sulawesi Selatan 90215', pageWidth / 2, footerY + 5, { align: 'center' });
+  doc.text('Email: info@vidaview.com | Telp: (021) 1234-5678', pageWidth / 2, footerY + 10, { align: 'center' });
+
+  // Divider
+  doc.setDrawColor(...lightColor);
+  doc.setLineWidth(0.3);
+  doc.line(leftMargin, footerY + 15, rightMargin, footerY + 15);
+
+  doc.setFontSize(7);
+  doc.text('Laporan keuangan owner - digenerate secara otomatis', pageWidth / 2, footerY + 20, { align: 'center' });
+
+  // Save
+  const fileName = `Laporan-Keuangan-Owner-${selectedYear}-${currentDate.replace(/\s+/g, '-')}.pdf`;
+  doc.save(fileName);
+};
+
+export const exportOwnerFinancialExcel = (reportData, revenueChart, occupancyData, selectedYear) => {
+  const workbook = XLSX.utils.book_new();
+
+  // ===== SHEET 1: RINGKASAN =====
+  const summarySheet = [];
+
+  summarySheet.push(['LAPORAN KEUANGAN OWNER VIDA VIEW']);
+  summarySheet.push([`Tahun: ${selectedYear}`]);
+  summarySheet.push([]);
+
+  summarySheet.push(['RINGKASAN']);
+  summarySheet.push(['Pendapatan Bulan Ini', reportData?.monthlyRevenue || 0]);
+  summarySheet.push(['Pendapatan Tahun Ini', reportData?.totalRevenue || 0]);
+  summarySheet.push(['Rata-rata Bulanan', (reportData?.totalRevenue || 0) / 12]);
+  summarySheet.push([]);
+
+  if (occupancyData) {
+    summarySheet.push(['STATUS OKUPANSI']);
+    summarySheet.push(['Total Unit', occupancyData.summary?.total || 0]);
+    summarySheet.push(['Unit Terisi', occupancyData.summary?.occupied || 0]);
+    summarySheet.push(['Unit Tersedia', occupancyData.summary?.available || 0]);
+    summarySheet.push(['Tingkat Okupansi', `${occupancyData.summary?.occupancy_rate || 0}%`]);
+  }
+
+  const ws1 = XLSX.utils.aoa_to_sheet(summarySheet);
+  ws1['!cols'] = [
+    { wch: 25 },
+    { wch: 20 }
+  ];
+  XLSX.utils.book_append_sheet(workbook, ws1, 'Ringkasan');
+
+  // ===== SHEET 2: PENDAPATAN BULANAN =====
+  if (revenueChart && revenueChart.length > 0) {
+    const revenueSheet = [];
+
+    revenueSheet.push([`PENDAPATAN BULANAN ${selectedYear}`]);
+    revenueSheet.push([]);
+    revenueSheet.push(['Bulan', 'Pendapatan', 'Growth', 'Status']);
+
+    revenueChart.forEach((month, index) => {
+      const prevValue = index > 0 ? revenueChart[index - 1].value : month.value;
+      const growthRate = prevValue > 0 ? ((month.value - prevValue) / prevValue * 100).toFixed(1) : 0;
+
+      revenueSheet.push([
+        month.label,
+        month.value,
+        `${growthRate >= 0 ? '+' : ''}${growthRate}%`,
+        month.value > 0 ? 'Active' : 'No Data'
+      ]);
+    });
+
+    revenueSheet.push([]);
+    revenueSheet.push(['TOTAL', reportData?.totalRevenue || 0]);
+
+    const ws2 = XLSX.utils.aoa_to_sheet(revenueSheet);
+    ws2['!cols'] = [
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 15 }
+    ];
+    XLSX.utils.book_append_sheet(workbook, ws2, 'Pendapatan Bulanan');
+  }
+
+  // ===== SHEET 3: OKUPANSI PER TIPE =====
+  if (occupancyData?.by_type && Object.keys(occupancyData.by_type).length > 0) {
+    const occupancySheet = [];
+
+    occupancySheet.push(['OKUPANSI PER TIPE UNIT']);
+    occupancySheet.push([]);
+    occupancySheet.push(['Tipe Unit', 'Total', 'Terisi', 'Tersedia', 'Okupansi']);
+
+    Object.entries(occupancyData.by_type).forEach(([type, data]) => {
+      occupancySheet.push([
+        type,
+        data.total,
+        data.occupied,
+        data.available,
+        `${Math.round((data.occupied / data.total) * 100)}%`
+      ]);
+    });
+
+    const ws3 = XLSX.utils.aoa_to_sheet(occupancySheet);
+    ws3['!cols'] = [
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 12 }
+    ];
+    XLSX.utils.book_append_sheet(workbook, ws3, 'Okupansi per Tipe');
+  }
+
+  // Save
+  const currentDate = new Date().toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+  const fileName = `Laporan-Keuangan-Owner-${selectedYear}-${currentDate.replace(/\s+/g, '-')}.xlsx`;
+  XLSX.writeFile(workbook, fileName);
+};
+
 export default {
   exportReportPDF,
-  exportReportExcel
+  exportReportExcel,
+  exportOwnerFinancialPDF,
+  exportOwnerFinancialExcel
 };

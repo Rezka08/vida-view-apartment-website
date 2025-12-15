@@ -45,7 +45,11 @@ const EditUnitModal = ({ isOpen, onClose, onSuccess, apartment }) => {
     const fetchFacilities = async () => {
         setLoadingFacilities(true);
         try {
-            const response = await facilitiesAPI.getFacilities({ category: 'unit', status: 'active' });
+            const response = await facilitiesAPI.getFacilities({
+                category: 'unit',
+                status: 'active',
+                is_custom: 'false' // Only fetch standard facilities, not custom ones
+            });
             setAvailableFacilities(response.facilities || []);
         } catch (error) {
             console.error('Error fetching facilities:', error);

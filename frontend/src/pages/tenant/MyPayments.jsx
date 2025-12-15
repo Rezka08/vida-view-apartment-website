@@ -245,15 +245,37 @@ const MyPayments = () => {
               )}
 
               {payment.payment_status === 'pending' && (
-                <div className="flex space-x-2">
-                  <Button
-                    onClick={() => handlePayNow(payment)}
-                    className="flex-1"
-                  >
-                    <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
-                    Bayar Sekarang
-                  </Button>
-                </div>
+                <>
+                  {payment.booking?.status === 'confirmed' || payment.booking?.status === 'active' ? (
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={() => handlePayNow(payment)}
+                        className="flex-1"
+                      >
+                        <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
+                        Bayar Sekarang
+                      </Button>
+                    </div>
+                  ) : payment.booking?.status === 'pending' ? (
+                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-sm text-yellow-900">
+                        <strong>Menunggu Verifikasi Owner</strong>
+                      </p>
+                      <p className="text-xs text-yellow-800 mt-1">
+                        Pembayaran dapat dilakukan setelah owner memverifikasi booking Anda
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-900">
+                        <strong>Booking {payment.booking?.status === 'rejected' ? 'Ditolak' : 'Dibatalkan'}</strong>
+                      </p>
+                      <p className="text-xs text-red-800 mt-1">
+                        {payment.booking?.rejection_reason || 'Pembayaran tidak dapat dilakukan'}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
 
               {payment.payment_status === 'completed' && (

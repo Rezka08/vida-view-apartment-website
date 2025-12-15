@@ -100,7 +100,8 @@ const BookingForm = () => {
     const totalMonths = calculateMonths(formData.start_date, formData.end_date);
 
     if (totalMonths < apartment.minimum_stay_months) {
-      toast.error(`Minimum sewa ${apartment.minimum_stay_months} bulan`);
+      toast.error(`Minimum sewa ${apartment.minimum_stay_months} bulan (${apartment.minimum_stay_months * 30} hari)`);
+      setCalculatedData(null); // Clear calculated data when invalid
       return;
     }
 
@@ -183,6 +184,13 @@ const BookingForm = () => {
       return;
     }
 
+    // Double-check validation
+    const totalMonths = calculateMonths(formData.start_date, formData.end_date);
+    if (totalMonths < apartment.minimum_stay_months) {
+      toast.error(`Minimum sewa ${apartment.minimum_stay_months} bulan (${apartment.minimum_stay_months * 30} hari)`);
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -194,9 +202,9 @@ const BookingForm = () => {
         promotion_id: appliedPromo ? appliedPromo.id : null
       };
 
-      const response = await bookingsAPI.createBooking(bookingData);
-      toast.success('Booking berhasil dibuat!');
-      navigate(`/booking/${response.booking.id}/payment`);
+      await bookingsAPI.createBooking(bookingData);
+      toast.success('Booking berhasil diajukan! Menunggu persetujuan owner.');
+      navigate('/tenant/bookings');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Gagal membuat booking');
     } finally {
@@ -314,7 +322,8 @@ const BookingForm = () => {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h4 className="font-semibold text-blue-900 mb-2">Informasi Penting:</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Minimum sewa: {apartment.minimum_stay_months} bulan</li>
+                  <li>• Minimum sewa: {apartment.minimum_stay_months} bulan ({apartment.minimum_stay_months * 30} hari)</li>
+                  <li>• Perhitungan sewa: 1 bulan = 30 hari</li>
                   <li>• Deposit akan dikembalikan setelah masa sewa berakhir</li>
                   <li>• Booking akan menunggu konfirmasi dari pemilik</li>
                   <li>• Pembayaran dilakukan setelah booking dikonfirmasi</li>
@@ -328,7 +337,7 @@ const BookingForm = () => {
                 loading={submitting}
                 disabled={!calculatedData || submitting}
               >
-                Lanjutkan ke Pembayaran
+                Ajukan Booking
               </Button>
             </form>
           </div>

@@ -15,6 +15,7 @@ import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import { formatCurrency } from '../../utils/formatters';
+import { exportOwnerFinancialPDF, exportOwnerFinancialExcel } from '../../utils/reportExporter';
 
 const FinancialReport = () => {
   const [loading, setLoading] = useState(true);
@@ -66,8 +67,19 @@ const FinancialReport = () => {
     return months[month - 1];
   };
 
-  const handleExport = (format) => {
-    toast(`Export ${format.toUpperCase()} akan segera tersedia`, { icon: 'ℹ️' });
+  const handleExport = async (format) => {
+    try {
+      if (format === 'pdf') {
+        await exportOwnerFinancialPDF(reportData, revenueChart, occupancyData, selectedYear);
+        toast.success('Laporan PDF berhasil diunduh');
+      } else if (format === 'excel') {
+        exportOwnerFinancialExcel(reportData, revenueChart, occupancyData, selectedYear);
+        toast.success('Laporan Excel berhasil diunduh');
+      }
+    } catch (error) {
+      console.error('Error exporting report:', error);
+      toast.error('Gagal mengekspor laporan');
+    }
   };
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);

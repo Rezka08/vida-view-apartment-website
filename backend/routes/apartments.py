@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Apartment, UnitPhoto, Facility, ApartmentFacility, Review, Favorite, User, Booking
+from models import db, Apartment, UnitPhoto, Facility, ApartmentFacility, Favorite, User, Booking
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils import role_required, paginate_query, save_file, log_activity
 from sqlalchemy import or_, and_
@@ -174,14 +174,7 @@ def get_apartment(apartment_id):
         apartment.total_views += 1
         db.session.commit()
 
-        # Get reviews
-        reviews = Review.query.filter_by(
-            apartment_id=apartment_id,
-            is_approved=True
-        ).order_by(Review.created_at.desc()).limit(10).all()
-
         data = apartment.to_dict(include_relations=True)
-        data['reviews'] = [review.to_dict() for review in reviews]
 
         return jsonify(data), 200
 
@@ -565,18 +558,22 @@ def get_favorites():
     """Get user's favorite apartments"""
     try:
         current_user_id = int(get_jwt_identity())
-        
+
         favorites = Favorite.query.filter_by(user_id=current_user_id).all()
-        
-        apartments = []
+
+        result = []
         for fav in favorites:
-            apt_data = fav.apartment.to_dict(include_relations=True)
-            apt_data['favorited_at'] = fav.created_at.isoformat()
-            apartments.append(apt_data)
-        
+            fav_data = {
+                'id': fav.id,
+                'apartment_id': fav.apartment_id,
+                'apartment': fav.apartment.to_dict(include_relations=True) if fav.apartment else None,
+                'created_at': fav.created_at.isoformat()
+            }
+            result.append(fav_data)
+
         return jsonify({
-            'favorites': apartments
+            'favorites': result
         }), 200
-        
+
     except Exception as e:
         return jsonify({'message': str(e)}), 500

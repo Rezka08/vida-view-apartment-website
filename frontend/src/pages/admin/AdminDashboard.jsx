@@ -135,7 +135,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link
           to="/admin/users"
           className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-center"
@@ -143,15 +143,6 @@ const AdminDashboard = () => {
           <UsersIcon className="h-12 w-12 mx-auto text-purple-600 mb-3" />
           <h3 className="font-semibold text-gray-900 mb-1">Kelola Pengguna</h3>
           <p className="text-sm text-gray-500">Manage users & roles</p>
-        </Link>
-
-        <Link
-          to="/admin/bookings"
-          className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow text-center"
-        >
-          <CalendarIcon className="h-12 w-12 mx-auto text-purple-600 mb-3" />
-          <h3 className="font-semibold text-gray-900 mb-1">Kelola Booking</h3>
-          <p className="text-sm text-gray-500">Manage all bookings</p>
         </Link>
 
         <Link
