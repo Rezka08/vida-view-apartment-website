@@ -154,27 +154,40 @@ def confirm_payment(payment_id):
     try:
         current_user_id = int(get_jwt_identity())
         user = User.query.get(current_user_id)
-        
+
         payment = Payment.query.get(payment_id)
-        
+
         if not payment:
             return jsonify({'message': 'Payment not found'}), 404
-        
+
         # Check permission (tenant can confirm their own payments)
         booking = payment.booking
         if user.role == 'tenant' and booking.tenant_id != current_user_id:
             return jsonify({'message': 'Access denied'}), 403
-        
+
         if payment.payment_status != 'pending':
             return jsonify({'message': f'Payment is already {payment.payment_status}'}), 400
-        
-        data = request.get_json()
-        
+
+        # Handle file upload (multipart/form-data)
+        receipt_file = request.files.get('receipt')
+
+        if not receipt_file:
+            return jsonify({'message': 'Receipt file is required'}), 400
+
+        # Save receipt file
+        from werkzeug.utils import secure_filename
+        import os
+        filename = secure_filename(f"receipt_{payment.payment_code}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{receipt_file.filename}")
+        upload_path = os.path.join('uploads', 'receipts', filename)
+        os.makedirs(os.path.dirname(upload_path), exist_ok=True)
+        receipt_file.save(upload_path)
+
         # Update payment
-        payment.payment_method = data.get('payment_method', payment.payment_method)
-        payment.transaction_id = data.get('transaction_id')
+        payment.payment_method = request.form.get('payment_method', payment.payment_method)
+        payment.transaction_id = request.form.get('transaction_id')
+        payment.receipt_file = f'/uploads/receipts/{filename}'
         payment.payment_date = datetime.utcnow()
-        payment.notes = data.get('notes', payment.notes)
+        payment.notes = request.form.get('notes', payment.notes)
 
         # For admin, mark as completed directly
         if user.role == 'admin':
@@ -268,14 +281,22 @@ def verify_payment(payment_id):
                 related_id=payment.id
             )
         else:
-            payment.payment_status = 'failed'
+            # When rejected, set payment to 'pending' so tenant can re-upload proof
+            payment.payment_status = 'pending'
             payment.notes = data.get('notes', 'Payment verification failed')
-            
+            payment.receipt_file = None  # Clear the rejected receipt
+
+            # If this is deposit payment, keep booking confirmed so tenant can pay directly
+            if payment.payment_type == 'deposit':
+                booking.status = 'confirmed'  # Keep confirmed - no re-approval needed
+                # Return apartment to available status so it can be searched again
+                booking.apartment.availability_status = 'available'
+
             # Create notification for tenant
             create_notification(
                 user_id=booking.tenant_id,
                 title='Pembayaran Ditolak',
-                message=f'Pembayaran {payment.payment_code} ditolak. Silakan hubungi admin.',
+                message=f'Pembayaran {payment.payment_code} ditolak. Alasan: {data.get("notes", "Tidak ada alasan")}. Silakan upload ulang bukti pembayaran yang valid.',
                 notification_type='payment',
                 related_id=payment.id
             )

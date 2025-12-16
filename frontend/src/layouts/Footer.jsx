@@ -35,9 +35,7 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-purple-600 font-bold text-xl">VV</span>
-              </div>
+              <img src="/logo.png" alt="Vida View" className="w-10 h-10 object-cover rounded-lg" />
               <span className="text-xl font-bold">Vida View</span>
             </div>
             <p className="text-gray-300 text-sm mb-4">
@@ -56,8 +54,6 @@ const Footer = () => {
               ))}
             </div>
           </div>
-
-          {/* Quick Links */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Tautan Cepat</h3>
             <ul className="space-y-2">
@@ -98,14 +94,14 @@ const Footer = () => {
               <li className="flex items-start space-x-3">
                 <MapPinIcon className="h-5 w-5 text-gray-300 flex-shrink-0 mt-0.5" />
                 <span className="text-gray-300 text-sm">
-                  Jl. Sudirman No. 123<br />
-                  Jakarta Pusat, 10220
+                  Jl. Topaz Raya, Kelurahan Masale<br />
+                  Kecamatan Panakkukang, Makassar, Sulawesi Selatan
                 </span>
               </li>
               <li className="flex items-center space-x-3">
                 <PhoneIcon className="h-5 w-5 text-gray-300 flex-shrink-0" />
-                <a href="tel:+622112345678" className="text-gray-300 hover:text-white text-sm">
-                  +62 21 1234 5678
+                <a href="tel:+62811581233" className="text-gray-300 hover:text-white text-sm">
+                  +62 811 581 233
                 </a>
               </li>
               <li className="flex items-center space-x-3">

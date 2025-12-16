@@ -34,7 +34,8 @@ const PromotionManagement = () => {
     value: '',
     start_date: '',
     end_date: '',
-    active: true
+    active: true,
+    usage_limit: ''
   });
   const [errors, setErrors] = useState({});
 
@@ -70,6 +71,9 @@ const PromotionManagement = () => {
     if (formData.start_date && formData.end_date && new Date(formData.end_date) < new Date(formData.start_date)) {
       newErrors.end_date = 'Tanggal selesai harus setelah tanggal mulai';
     }
+    if (formData.usage_limit && parseInt(formData.usage_limit) < 0) {
+      newErrors.usage_limit = 'Batas penggunaan tidak boleh negatif';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -93,7 +97,8 @@ const PromotionManagement = () => {
         value: parseFloat(formData.value),
         start_date: formData.start_date,
         end_date: formData.end_date,
-        active: formData.active
+        active: formData.active,
+        usage_limit: formData.usage_limit ? parseInt(formData.usage_limit) : null
       };
 
       if (editingPromotion) {
@@ -125,7 +130,8 @@ const PromotionManagement = () => {
       value: promotion.value || '',
       start_date: promotion.start_date || '',
       end_date: promotion.end_date || '',
-      active: promotion.active !== undefined ? promotion.active : true
+      active: promotion.active !== undefined ? promotion.active : true,
+      usage_limit: promotion.usage_limit || ''
     });
     setErrors({});
     setShowModal(true);
@@ -157,7 +163,8 @@ const PromotionManagement = () => {
       value: '',
       start_date: '',
       end_date: '',
-      active: true
+      active: true,
+      usage_limit: ''
     });
     setEditingPromotion(null);
     setErrors({});
@@ -323,6 +330,27 @@ const PromotionManagement = () => {
                       </div>
                     </div>
                   </div>
+
+                  {promotion.usage_limit && (
+                    <div className="pt-2 border-t border-gray-200">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Penggunaan</span>
+                        <span className="font-medium">
+                          {promotion.usage_count || 0} / {promotion.usage_limit}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div
+                          className={`h-2 rounded-full ${
+                            (promotion.usage_count || 0) >= promotion.usage_limit
+                              ? 'bg-red-500'
+                              : 'bg-green-500'
+                          }`}
+                          style={{ width: `${Math.min(((promotion.usage_count || 0) / promotion.usage_limit) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons - Fixed at Bottom */}
@@ -424,6 +452,17 @@ const PromotionManagement = () => {
               required
             />
           </div>
+
+          <Input
+            label="Batas Penggunaan"
+            type="number"
+            value={formData.usage_limit}
+            onChange={(e) => setFormData(prev => ({ ...prev, usage_limit: e.target.value }))}
+            error={errors.usage_limit}
+            placeholder="Kosongkan jika tidak ada batas"
+            min="0"
+            helpText="Jumlah maksimal kode promosi dapat digunakan. Kosongkan untuk tanpa batas."
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <Input

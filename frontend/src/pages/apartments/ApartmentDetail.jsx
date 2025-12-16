@@ -141,14 +141,6 @@ const ApartmentDetail = () => {
     navigate(`/booking/${id}`);
   };
 
-  const handleContactOwner = () => {
-    if (!isAuthenticated) {
-      toast.error('Silakan login terlebih dahulu');
-      navigate('/login');
-      return;
-    }
-    toast('Fitur hubungi pemilik akan segera tersedia', { icon: 'ℹ️' });
-  };
 
   if (loading) {
     return <Loading fullScreen text="Memuat detail apartemen..." />;
@@ -273,24 +265,16 @@ const ApartmentDetail = () => {
                   <span className="font-medium">{apartment.furnished ? 'Ya' : 'Tidak'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">View Direction</span>
-                  <span className="font-medium">{apartment.view_direction || '-'}</span>
+                  <span className="text-gray-600">Arah Pandang</span>
+                  <span className="font-medium">{apartment.view_direction || 'Barat'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Daya Listrik</span>
-                  <span className="font-medium">{apartment.electricity_watt || '-'} Watt</span>
+                  <span className="font-medium">{apartment.electricity_watt || '1400'} Watt</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Parkir</span>
-                  <span className="font-medium">{apartment.parking_slots || 0} Slot</span>
-                </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Pet Friendly</span>
-                  <span className="font-medium">{apartment.pet_friendly ? 'Ya' : 'Tidak'}</span>
-                </div>
-                <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Smoking</span>
-                  <span className="font-medium">{apartment.smoking_allowed ? 'Diizinkan' : 'Tidak Diizinkan'}</span>
+                  <span className="font-medium">{apartment.parking_slots || 1} Slot</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Minimum Sewa</span>
@@ -347,13 +331,6 @@ const ApartmentDetail = () => {
                     onClick={handleBooking}
                   >
                     Booking Sekarang
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant="outline"
-                    onClick={handleContactOwner}
-                  >
-                    Hubungi Pemilik
                   </Button>
                   <Button
                     fullWidth

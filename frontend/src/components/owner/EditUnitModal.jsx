@@ -497,11 +497,14 @@ const EditUnitModal = ({ isOpen, onClose, onSuccess, apartment }) => {
                     return (
                     <div key={photo.id} className="relative">
                         <img
-                        src={import.meta.env.VITE_API_URL + photo.photo_url}
+                        src={photo.photo_url.startsWith('http') ? photo.photo_url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001'}${photo.photo_url}`}
                         alt="Unit"
                         className={`w-full h-20 object-cover rounded ${
                             isMarkedForDeletion ? 'opacity-50' : ''
                         }`}
+                        onError={(e) => {
+                          e.target.src = '/placeholder-apartment.jpg';
+                        }}
                         />
                         {isMarkedForDeletion ? (
                         <button

@@ -41,14 +41,21 @@ const PaymentVerification = () => {
   };
 
   const handleVerify = async (approve) => {
+    // Validate notes required when rejecting
+    if (!approve && !notes.trim()) {
+      toast.error('Alasan penolakan harus diisi');
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await paymentsAPI.verifyPayment(selectedPayment.id, { 
-        approved: approve, 
-        notes: notes 
+      await paymentsAPI.verifyPayment(selectedPayment.id, {
+        approved: approve,
+        notes: notes
       });
-      toast.success(approve ? 'Pembayaran diverifikasi' : 'Pembayaran ditolak');
+      toast.success(approve ? 'Pembayaran diverifikasi' : 'Pembayaran ditolak. Penyewa dapat upload ulang bukti pembayaran.');
       setShowModal(false);
+      setNotes('');
       fetchPayments();
     } catch (error) {
       toast.error('Gagal memverifikasi pembayaran');
@@ -177,13 +184,41 @@ const PaymentVerification = () => {
               </div>
             </div>
 
+            {/* Payment Proof Image */}
+            {selectedPayment.receipt_file && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-2 font-medium">Bukti Pembayaran</p>
+                <div className="relative">
+                  <img
+                    src={selectedPayment.receipt_file}
+                    alt="Bukti Pembayaran"
+                    className="w-full h-auto max-h-96 object-contain rounded-lg border border-gray-300"
+                    onError={(e) => {
+                      e.target.src = '/placeholder-image.jpg';
+                      e.target.alt = 'Gagal memuat gambar';
+                    }}
+                  />
+                  <a
+                    href={selectedPayment.receipt_file}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center text-sm text-purple-600 hover:text-purple-700"
+                  >
+                    <EyeIcon className="h-4 w-4 mr-1" />
+                    Lihat ukuran penuh
+                  </a>
+                </div>
+              </div>
+            )}
+
             {action !== 'view' && (
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Catatan (opsional)..."
+                placeholder={action === 'reject' ? "Alasan penolakan (wajib diisi)..." : "Catatan (opsional)..."}
                 rows={3}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required={action === 'reject'}
               />
             )}
 

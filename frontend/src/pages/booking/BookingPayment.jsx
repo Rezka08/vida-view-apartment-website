@@ -105,16 +105,19 @@ const BookingPayment = () => {
       return;
     }
 
+    if (!paymentData.receipt_file) {
+      toast.error('Upload bukti pembayaran wajib diisi');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('payment_method', paymentData.payment_method);
       formData.append('transaction_id', paymentData.transaction_id);
+      formData.append('receipt', paymentData.receipt_file);
       if (paymentData.notes) {
         formData.append('notes', paymentData.notes);
-      }
-      if (paymentData.receipt_file) {
-        formData.append('receipt_file', paymentData.receipt_file);
       }
 
       await paymentsAPI.confirmPayment(payment.id, formData);
@@ -255,15 +258,55 @@ const BookingPayment = () => {
                     <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
                       <h3 className="text-lg font-semibold text-purple-900 mb-4 flex items-center">
                         <CreditCardIcon className="h-6 w-6 mr-2" />
-                        Pembayaran Kartu Kredit/Debit
+                        Informasi Kartu Kredit/Debit
                       </h3>
-                      <p className="text-purple-800 mb-4">
-                        Anda akan diarahkan ke gateway pembayaran untuk menyelesaikan transaksi.
-                      </p>
-                      <div className="flex space-x-2">
-                        <img src="/images/visa.png" alt="Visa" className="h-8" onError={(e) => e.target.style.display = 'none'} />
-                        <img src="/images/mastercard.png" alt="Mastercard" className="h-8" onError={(e) => e.target.style.display = 'none'} />
-                        <img src="/images/jcb.png" alt="JCB" className="h-8" onError={(e) => e.target.style.display = 'none'} />
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-purple-800 mb-2">
+                            Nomor Kartu <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            maxLength="19"
+                            placeholder="1234 5678 9012 3456"
+                            className="w-full px-4 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            onChange={(e) => {
+                              // Auto-format with spaces every 4 digits
+                              const value = e.target.value.replace(/\s/g, '');
+                              const formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+                              e.target.value = formatted;
+                            }}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-purple-800 mb-2">
+                              Tanggal Kadaluarsa <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              maxLength="5"
+                              placeholder="MM/YY"
+                              className="w-full px-4 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-purple-800 mb-2">
+                              CVV <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              maxLength="3"
+                              placeholder="123"
+                              className="w-full px-4 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex space-x-2 mt-3">
+                          <img src="/images/visa.png" alt="Visa" className="h-8" onError={(e) => e.target.style.display = 'none'} />
+                          <img src="/images/mastercard.png" alt="Mastercard" className="h-8" onError={(e) => e.target.style.display = 'none'} />
+                          <img src="/images/jcb.png" alt="JCB" className="h-8" onError={(e) => e.target.style.display = 'none'} />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -272,17 +315,44 @@ const BookingPayment = () => {
                     <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-200">
                       <h3 className="text-lg font-semibold text-green-900 mb-4 flex items-center">
                         <DevicePhoneMobileIcon className="h-6 w-6 mr-2" />
-                        Pembayaran E-Wallet
+                        Informasi Pembayaran E-Wallet
                       </h3>
                       <p className="text-green-800 mb-4">
-                        Pilih e-wallet favorit Anda untuk menyelesaikan pembayaran.
+                        Transfer ke nomor berikut sesuai e-wallet pilihan Anda:
                       </p>
-                      <div className="grid grid-cols-4 gap-3">
-                        {['GoPay', 'OVO', 'Dana', 'LinkAja'].map((wallet) => (
-                          <div key={wallet} className="p-3 bg-white rounded-lg border-2 border-green-200 hover:border-green-500 cursor-pointer text-center transition-colors">
-                            <p className="text-sm font-semibold text-green-900">{wallet}</p>
+                      <div className="space-y-3">
+                        {[
+                          { name: 'GoPay', phone: '0811-5812-33' },
+                          { name: 'OVO', phone: '0812-3456-7891' },
+                          { name: 'Dana', phone: '0811-4323-2343' },
+                          { name: 'LinkAja', phone: '0812-2424-5454' }
+                        ].map((wallet) => (
+                          <div key={wallet.name} className="p-4 bg-white rounded-lg border-2 border-green-200 hover:border-green-500 transition-colors">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="text-sm font-semibold text-green-900">{wallet.name}</p>
+                                <p className="text-xs text-green-700 mt-1">Atas Nama: PT Vida View Apartments</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-mono font-bold text-green-900">{wallet.phone}</p>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(wallet.phone);
+                                    toast.success(`Nomor ${wallet.name} berhasil disalin`);
+                                  }}
+                                  className="text-xs text-green-600 hover:text-green-700 underline mt-1"
+                                >
+                                  Salin Nomor
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         ))}
+                      </div>
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                        <p className="text-sm text-yellow-800">
+                          <strong>Penting:</strong> Transfer sesuai nominal yang tertera dan simpan bukti transfer.
+                        </p>
                       </div>
                     </div>
                   )}
@@ -326,7 +396,7 @@ const BookingPayment = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Upload Bukti Pembayaran (Opsional)
+                      Upload Bukti Pembayaran <span className="text-red-500">*</span>
                     </label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition-colors cursor-pointer">
                       <input
@@ -335,20 +405,21 @@ const BookingPayment = () => {
                         accept="image/*,.pdf"
                         onChange={handleFileChange}
                         className="hidden"
+                        required
                       />
                       <label htmlFor="receipt-upload" className="cursor-pointer">
                         <DocumentArrowUpIcon className="h-12 w-12 mx-auto text-gray-400 mb-2" />
                         <p className="text-sm text-gray-600 mb-1">
                           {paymentData.receipt_file ? (
                             <span className="text-purple-600 font-medium">
-                              {paymentData.receipt_file.name}
+                              ✓ {paymentData.receipt_file.name}
                             </span>
                           ) : (
                             'Klik untuk upload atau drag and drop'
                           )}
                         </p>
                         <p className="text-xs text-gray-500">
-                          PNG, JPG, PDF (max. 5MB)
+                          PNG, JPG, PDF (max. 5MB) - <span className="text-red-500 font-medium">Wajib diisi</span>
                         </p>
                       </label>
                     </div>
@@ -390,7 +461,7 @@ const BookingPayment = () => {
                     <Button
                       onClick={handleSubmitPayment}
                       loading={submitting}
-                      disabled={!paymentData.transaction_id || submitting}
+                      disabled={!paymentData.transaction_id || !paymentData.receipt_file || submitting}
                       fullWidth
                       size="lg"
                     >

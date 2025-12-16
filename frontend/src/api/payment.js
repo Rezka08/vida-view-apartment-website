@@ -28,7 +28,11 @@ export const paymentsAPI = {
 
   // Confirm payment (upload proof)
   confirmPayment: async (id, paymentData) => {
-    const response = await api.post(`/payments/${id}/confirm`, paymentData);
+    const response = await api.post(`/payments/${id}/confirm`, paymentData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 

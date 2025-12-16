@@ -17,8 +17,10 @@ import Input from '../../components/common/Input';
 import Pagination from '../../components/common/Pagination';
 import Loading from '../../components/common/Loading';
 import { formatDate } from '../../utils/formatters';
+import { useAuthStore } from '../../stores/authStore';
 
 const UserManagement = () => {
+  const { user: currentUser } = useAuthStore();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -218,7 +220,7 @@ const UserManagement = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
+              {users.filter(user => user.id !== currentUser?.id).map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">

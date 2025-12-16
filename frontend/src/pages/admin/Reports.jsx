@@ -101,7 +101,7 @@ const Reports = () => {
           <div className="mt-6">
             <h3 className="font-semibold mb-3">Okupansi per Tipe Unit</h3>
             <div className="space-y-3">
-              {Object.entries(occupancyData.by_type).map(([type, data]) => (
+              {Object.entries(occupancyData.by_type).filter(([type]) => type !== 'Studio').map(([type, data]) => (
                 <div key={type} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex-1">
                     <p className="font-medium">{type}</p>
