@@ -57,7 +57,7 @@ const Login = () => {
       } else if (user.role === 'owner') {
         navigate('/owner/dashboard');
       } else {
-        navigate('/tenant/dashboard');
+        navigate('/dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login gagal. Silakan coba lagi.');

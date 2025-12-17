@@ -1,18 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
+import {
   BuildingOfficeIcon,
   ShieldCheckIcon,
   MapPinIcon,
-  HomeModernIcon 
+  HomeModernIcon
 } from '@heroicons/react/24/outline';
 import Button from '../components/common/Button';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Menggunakan URL gambar yang diberikan oleh pengguna
   const imageUrl ='/img/vida_view.jpg';
+
+  // Handle search
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      navigate(`/apartments?search=${encodeURIComponent(searchTerm)}`);
+    } else {
+      navigate('/apartments');
+    }
+  };
+
+  // Handle Enter key
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   const features = [
     {
@@ -76,10 +93,13 @@ const Home = () => {
                 <input
                   type="text"
                   placeholder="Cari unit apartemen..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   className="flex-1 px-6 py-4 rounded-l-lg focus:outline-none text-gray-900"
                 />
                 <Button
-                  onClick={() => navigate('/apartments')}
+                  onClick={handleSearch}
                   className="rounded-l-none px-8"
                 >
                   Cari

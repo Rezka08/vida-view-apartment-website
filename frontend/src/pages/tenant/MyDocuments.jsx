@@ -222,15 +222,9 @@ const MyDocuments = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dokumen Saya</h1>
-          <p className="text-gray-600">Kelola dokumen untuk verifikasi akun</p>
-        </div>
-        <Button onClick={() => setShowUploadModal(true)}>
-          <DocumentArrowUpIcon className="h-5 w-5 mr-2" />
-          Upload Dokumen
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Dokumen Saya</h1>
+        <p className="text-gray-600">Kelola dokumen untuk verifikasi akun</p>
       </div>
 
       {/* Verification Status */}

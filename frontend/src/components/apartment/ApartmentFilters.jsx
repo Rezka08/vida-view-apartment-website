@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
@@ -8,11 +8,11 @@ import {
 import Button from '../common/Button';
 import { useAuthStore } from '../../stores/authStore';
 
-const ApartmentFilters = ({ onFilterChange, onSearch }) => {
+const ApartmentFilters = ({ onFilterChange, onSearch, initialSearch = '' }) => {
   const [showFilters, setShowFilters] = useState(false);
   const { isAuthenticated } = useAuthStore();
   const [filters, setFilters] = useState({
-    search: '',
+    search: initialSearch,
     unit_type: '',
     min_price: '',
     max_price: '',
@@ -22,6 +22,13 @@ const ApartmentFilters = ({ onFilterChange, onSearch }) => {
 
   const unitTypes = ['1BR', '2BR', '3BR'];
   const bedroomOptions = [1, 2, 3];
+
+  // Update search field when initialSearch changes (from URL params)
+  useEffect(() => {
+    if (initialSearch) {
+      setFilters(prev => ({ ...prev, search: initialSearch }));
+    }
+  }, [initialSearch]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

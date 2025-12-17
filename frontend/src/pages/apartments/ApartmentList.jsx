@@ -90,6 +90,14 @@ const ApartmentList = () => {
     fetchApartments();
   }, [pagination.page]);
 
+  // Handle initial search from URL params
+  useEffect(() => {
+    const searchQuery = searchParams.get('search');
+    if (searchQuery) {
+      fetchApartments({ search: searchQuery });
+    }
+  }, [searchParams]);
+
   // Handle filter change
   const handleFilterChange = (filters) => {
     setPagination(prev => ({ ...prev, page: 1 }));
@@ -160,6 +168,7 @@ const ApartmentList = () => {
         <ApartmentFilters
           onFilterChange={handleFilterChange}
           onSearch={handleSearch}
+          initialSearch={searchParams.get('search') || ''}
         />
 
         {/* Loading State */}
