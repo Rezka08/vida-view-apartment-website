@@ -46,8 +46,8 @@ const PromotionManagement = () => {
   const fetchPromotions = async () => {
     setLoading(true);
     try {
-      const params = filter !== 'all' ? { status: filter } : {};
-      const response = await promotionsAPI.getPromotions(params);
+      // Always fetch all promotions, filter will be done in frontend
+      const response = await promotionsAPI.getPromotions({});
       setPromotions(response.promotions || []);
     } catch (error) {
       console.error('Error fetching promotions:', error);
@@ -66,6 +66,7 @@ const PromotionManagement = () => {
     if (!formData.title.trim()) newErrors.title = 'Judul harus diisi';
     if (!formData.value || parseFloat(formData.value) <= 0) newErrors.value = 'Nilai diskon harus lebih dari 0';
     if (formData.type === 'percent' && parseFloat(formData.value) > 100) newErrors.value = 'Persentase maksimal 100%';
+    if (formData.type === 'fixed_amount' && parseFloat(formData.value) > 1000000) newErrors.value = 'Nominal tetap maksimal Rp 1.000.000';
     if (!formData.start_date) newErrors.start_date = 'Tanggal mulai harus diisi';
     if (!formData.end_date) newErrors.end_date = 'Tanggal selesai harus diisi';
     if (formData.start_date && formData.end_date && new Date(formData.end_date) < new Date(formData.start_date)) {
@@ -196,6 +197,16 @@ const PromotionManagement = () => {
     return today >= startDate && today <= endDate;
   };
 
+  // Filter promotions based on selected filter
+  const getFilteredPromotions = () => {
+    if (filter === 'all') return promotions;
+    if (filter === 'active') return promotions.filter(p => isPromotionActive(p));
+    if (filter === 'inactive') return promotions.filter(p => !isPromotionActive(p));
+    return promotions;
+  };
+
+  const filteredPromotions = getFilteredPromotions();
+
   if (loading) {
     return <Loading fullScreen text="Memuat promosi..." />;
   }
@@ -259,9 +270,9 @@ const PromotionManagement = () => {
       </div>
 
       {/* Promotions List */}
-      {promotions.length > 0 ? (
+      {filteredPromotions.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {promotions.map((promotion) => (
+          {filteredPromotions.map((promotion) => (
             <div
               key={promotion.id}
               className="relative bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col"

@@ -151,6 +151,10 @@ def create_booking():
         if promotion_id:
             promotion = Promotion.query.get(promotion_id)
             if promotion and promotion.active:
+                # Check if promotion has reached usage limit
+                if promotion.usage_limit and promotion.usage_count >= promotion.usage_limit:
+                    return jsonify({'message': 'Promosi telah mencapai batas penggunaan'}), 400
+
                 # Check if promotion is valid (dates)
                 today = datetime.now().date()
                 if promotion.start_date <= today <= promotion.end_date:
@@ -158,6 +162,9 @@ def create_booking():
                         discount_amount = subtotal * (Decimal(str(promotion.value)) / Decimal('100'))
                     elif promotion.type == 'fixed_amount':
                         discount_amount = Decimal(str(promotion.value))
+
+                    # Increment usage count
+                    promotion.usage_count = (promotion.usage_count or 0) + 1
 
         # Calculate final total amount after discount
         total_amount = subtotal - discount_amount

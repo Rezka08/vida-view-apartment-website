@@ -37,8 +37,8 @@ def update_profile():
         old_data = user.to_dict()
         
         # Update allowed fields
-        updateable_fields = ['full_name', 'phone', 'address', 'birth_date']
-        
+        updateable_fields = ['full_name', 'phone', 'address', 'birth_date', 'id_card_number']
+
         for field in updateable_fields:
             if field in data:
                 if field == 'birth_date' and data[field]:

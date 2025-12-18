@@ -393,6 +393,7 @@ class Promotion(db.Model):
     min_nights = db.Column(db.Integer)
     active = db.Column(db.Boolean, default=True)
     usage_limit = db.Column(db.Integer)
+    usage_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -409,7 +410,8 @@ class Promotion(db.Model):
             'end_date': self.end_date.isoformat() if self.end_date else None,
             'min_nights': self.min_nights,
             'active': self.active,
-            'usage_limit': self.usage_limit
+            'usage_limit': self.usage_limit,
+            'usage_count': self.usage_count or 0
         }
 
 class ActivityLog(db.Model):
